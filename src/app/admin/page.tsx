@@ -3,6 +3,7 @@ import { routes, users } from "@/lib/schema";
 import { eq, count } from "drizzle-orm";
 import { haversineKm } from "@/lib/haversine";
 import { RouteActions, MatchActions } from "@/components/AdminActions";
+import RadiusSlider from "@/components/RadiusSlider";
 import Link from "next/link";
 
 interface RouteWithUser {
@@ -22,10 +23,11 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; radius?: string }>;
 }) {
   const params = await searchParams;
   const tab = params.tab || "active";
+  const radius = Math.min(Math.max(Number(params.radius) || 2, 1), 50);
 
   let allRoutes: RouteWithUser[] = [];
   let matches: Match[] = [];
@@ -64,7 +66,7 @@ export default async function AdminPage({
             b.route.destinationLat, b.route.destinationLng
           );
 
-          if (originDist <= 2 && destDist <= 2) {
+          if (originDist <= radius && destDist <= radius) {
             matches.push({
               routeA: a, routeB: b,
               originDistanceKm: Math.round(originDist * 100) / 100,
@@ -118,6 +120,11 @@ export default async function AdminPage({
           </Link>
         </div>
 
+        {/* Radius Slider (only on active tab) */}
+        {tab === "active" && (
+          <RadiusSlider currentRadius={radius} />
+        )}
+
         {/* Matches Section (only on active tab) */}
         {tab === "active" && (
           <section>
@@ -127,7 +134,7 @@ export default async function AdminPage({
 
             {matches.length === 0 ? (
               <div className="bg-white rounded-xl p-8 text-center text-gray-500 border">
-                No hay matches dentro de 2 km todavía.
+                No hay matches dentro de {radius} km todavía.
               </div>
             ) : (
               <div className="space-y-4">
