@@ -12,7 +12,7 @@ import {
 
 export const roleEnum = pgEnum("role", ["user", "admin"]);
 export const cargoTypeEnum = pgEnum("cargo_type", ["general", "refrigerated"]);
-export const routeStatusEnum = pgEnum("route_status", ["active", "inactive"]);
+export const routeStatusEnum = pgEnum("route_status", ["active", "inactive", "archived", "matched"]);
 export const userTypeEnum = pgEnum("user_type", ["transportista", "enviador"]);
 
 export const users = pgTable("users", {
