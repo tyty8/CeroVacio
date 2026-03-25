@@ -80,6 +80,13 @@ export default async function AdminPage({
     error = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
   }
 
+  // Collect IDs of routes that appear in matches for highlighting
+  const matchedRouteIds = new Set<string>();
+  for (const m of matches) {
+    matchedRouteIds.add(m.routeA.route.id);
+    matchedRouteIds.add(m.routeB.route.id);
+  }
+
   if (error) {
     return (
       <main className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
@@ -222,7 +229,7 @@ export default async function AdminPage({
                 </thead>
                 <tbody>
                   {allRoutes.map(({ route, user }) => (
-                    <tr key={route.id} className="border-b hover:bg-gray-50">
+                    <tr key={route.id} className={`border-b ${matchedRouteIds.has(route.id) ? "bg-green-50 hover:bg-green-100" : "hover:bg-gray-50"}`}>
                       <td className="px-4 py-3">
                         <span className={`text-xs font-semibold px-2 py-1 rounded ${
                           route.userType === "transportista"
