@@ -88,10 +88,19 @@ export async function searchAddress(
 
   const results: GeocodeSuggestion[] = await res.json();
 
-  // Replace display_name with street-address-first format
+  // Replace display_name with street-address-first format and deduplicate
   for (const r of results) {
     r.display_name = formatAddress(r, query);
   }
 
-  return results;
+  const seen = new Set<string>();
+  const unique: GeocodeSuggestion[] = [];
+  for (const r of results) {
+    if (!seen.has(r.display_name)) {
+      seen.add(r.display_name);
+      unique.push(r);
+    }
+  }
+
+  return unique;
 }
