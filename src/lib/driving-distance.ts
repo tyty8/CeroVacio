@@ -1,5 +1,9 @@
-interface RouteResponse {
-  routes: { summary: { distance: number; duration: number } }[];
+interface OrsGeoJsonResponse {
+  features: {
+    properties: {
+      summary: { distance: number; duration: number };
+    };
+  }[];
 }
 
 /** Get driving distance (km) and duration (minutes) between two points via OpenRouteService */
@@ -15,7 +19,7 @@ export async function getDrivingDistance(
   try {
     // ORS expects [lng, lat] order
     const res = await fetch(
-      `https://api.openrouteservice.org/v2/directions/driving-hgv?start=${lng1},${lat1}&end=${lng2},${lat2}`,
+      `https://api.openrouteservice.org/v2/directions/driving-car?start=${lng1},${lat1}&end=${lng2},${lat2}`,
       {
         headers: { Authorization: apiKey },
       }
@@ -23,8 +27,8 @@ export async function getDrivingDistance(
 
     if (!res.ok) return null;
 
-    const data = (await res.json()) as RouteResponse;
-    const summary = data.routes?.[0]?.summary;
+    const data = (await res.json()) as OrsGeoJsonResponse;
+    const summary = data.features?.[0]?.properties?.summary;
     if (!summary) return null;
 
     return {
