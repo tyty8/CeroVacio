@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BackhaulMatch - Conecta tus rutas de retorno",
+  title: "LuxuTech - Conecta tus rutas de retorno",
   description:
     "Elimina los viajes vacíos conectando transportistas con enviadores en rutas compatibles.",
 };

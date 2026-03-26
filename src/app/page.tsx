@@ -44,10 +44,10 @@ export default function Home() {
       <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">CV</span>
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">LT</span>
             </div>
-            <span className="text-xl font-bold text-gray-900">CeroVacío</span>
+            <span className="text-xl font-bold text-gray-900">LuxuTech</span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             <a href="#como-funciona" className="hover:text-blue-600 transition-colors">Cómo funciona</a>
@@ -323,10 +323,10 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">CV</span>
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">LT</span>
                 </div>
-                <span className="text-lg font-bold text-white">CeroVacío</span>
+                <span className="text-lg font-bold text-white">LuxuTech</span>
               </div>
               <p className="text-sm leading-relaxed">
                 Conectamos transportistas con enviadores para eliminar los viajes vacíos en Chile.
@@ -343,13 +343,13 @@ export default function Home() {
             <div>
               <h4 className="font-semibold text-white mb-4">Contacto</h4>
               <ul className="space-y-2 text-sm">
-                <li>contacto@cerovacio.cl</li>
+                <li>contacto@luxutech.cl</li>
                 <li>Santiago, Chile</li>
               </ul>
             </div>
           </div>
           <div className="border-t border-gray-800 pt-8 text-center text-sm">
-            &copy; {new Date().getFullYear()} CeroVacío. Todos los derechos reservados.
+            &copy; {new Date().getFullYear()} LuxuTech. Todos los derechos reservados.
           </div>
         </div>
       </footer>
