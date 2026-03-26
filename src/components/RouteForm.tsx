@@ -35,6 +35,11 @@ export default function RouteForm({ userType, title, routeQuestion, children }: 
     if (params.get("dlat")) setDestinationLat(Number(params.get("dlat")));
     if (params.get("dlng")) setDestinationLng(Number(params.get("dlng")));
     if (params.get("date")) setPickupDate(params.get("date")!);
+
+    // Skip to email step if route data is complete from homepage
+    if (params.get("olat") && params.get("dlat") && params.get("date")) {
+      setStep("email");
+    }
   }, []);
 
   const [cargoType, setCargoType] = useState<"general" | "refrigerated">("general");
