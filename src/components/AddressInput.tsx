@@ -20,12 +20,14 @@ export default function AddressInput({
   const [suggestions, setSuggestions] = useState<GeocodeSuggestion[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [noResults, setNoResults] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const handleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const val = e.target.value;
       setQuery(val);
+      setNoResults(false);
 
       if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -40,6 +42,7 @@ export default function AddressInput({
         const results = await searchAddress(val);
         setSuggestions(results);
         setIsOpen(results.length > 0);
+        setNoResults(results.length === 0);
         setIsLoading(false);
       }, 500);
     },
@@ -88,6 +91,11 @@ export default function AddressInput({
             </li>
           ))}
         </ul>
+      )}
+      {noResults && !isLoading && (
+        <p className="text-xs text-amber-600 mt-1">
+          No encontramos esta dirección. Intenta con el nombre de la calle y comuna.
+        </p>
       )}
     </div>
   );
