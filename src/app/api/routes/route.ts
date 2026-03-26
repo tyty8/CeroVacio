@@ -21,6 +21,7 @@ export async function POST(request: Request) {
       palletCount,
       weightKg,
       cargoDescription,
+      pickupDate,
     } = body;
 
     // Validate required fields
@@ -63,6 +64,7 @@ export async function POST(request: Request) {
         destinationAddress,
         destinationLat,
         destinationLng,
+        pickupWindowStart: pickupDate ? new Date(pickupDate) : null,
         cargoType: cargoType || null,
         palletCount: palletCount || null,
         weightKg: weightKg || null,

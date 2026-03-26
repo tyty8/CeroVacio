@@ -2,131 +2,40 @@
 
 import { useState } from "react";
 import AddressInput from "@/components/AddressInput";
-import MapPreviewDynamic from "@/components/MapPreviewDynamic";
-
-type UserType = "transportista" | "enviador" | null;
-type Step = "role" | "route" | "email" | "verify" | "contact" | "done";
 
 export default function Home() {
-  const [step, setStep] = useState<Step>("role");
-  const [userType, setUserType] = useState<UserType>(null);
+  // Check matches state
+  const [checkOriginAddress, setCheckOriginAddress] = useState("");
+  const [checkOriginLat, setCheckOriginLat] = useState<number | undefined>();
+  const [checkOriginLng, setCheckOriginLng] = useState<number | undefined>();
+  const [checkDestAddress, setCheckDestAddress] = useState("");
+  const [checkDestLat, setCheckDestLat] = useState<number | undefined>();
+  const [checkDestLng, setCheckDestLng] = useState<number | undefined>();
+  const [matchCount, setMatchCount] = useState<number | null>(null);
+  const [isChecking, setIsChecking] = useState(false);
 
-  const [originAddress, setOriginAddress] = useState("");
-  const [originLat, setOriginLat] = useState<number | undefined>();
-  const [originLng, setOriginLng] = useState<number | undefined>();
-  const [destinationAddress, setDestinationAddress] = useState("");
-  const [destinationLat, setDestinationLat] = useState<number | undefined>();
-  const [destinationLng, setDestinationLng] = useState<number | undefined>();
-
-  const [cargoType, setCargoType] = useState<"general" | "refrigerated">("general");
-  const [palletCount, setPalletCount] = useState("");
-  const [weightKg, setWeightKg] = useState("");
-  const [cargoDescription, setCargoDescription] = useState("");
-
-  const [email, setEmail] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [codeError, setCodeError] = useState("");
-  const [isSending, setIsSending] = useState(false);
-
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSelectRole = (type: UserType) => {
-    setUserType(type);
-    setStep("route");
-  };
-
-  const handleRouteSubmit = () => {
-    if (!originLat || !destinationLat) return;
-    setStep("email");
-  };
-
-  const handleSendVerification = async () => {
-    if (!email || !email.includes("@")) {
-      setEmailError("Ingresa un email válido");
-      return;
-    }
-    setEmailError("");
-    setIsSending(true);
+  const handleCheckMatches = async () => {
+    if (!checkOriginLat || !checkDestLat) return;
+    setIsChecking(true);
+    setMatchCount(null);
     try {
-      const res = await fetch("/api/verify/send", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setEmailError(data.error || "Error al enviar el código");
-        return;
-      }
-      setStep("verify");
-    } catch {
-      setEmailError("Error de conexión");
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  const handleVerifyCode = async () => {
-    if (verificationCode.length !== 6) {
-      setCodeError("El código debe tener 6 dígitos");
-      return;
-    }
-    setCodeError("");
-    setIsSending(true);
-    try {
-      const res = await fetch("/api/verify/check", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code: verificationCode }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setCodeError(data.error || "Código inválido");
-        return;
-      }
-      setStep("contact");
-    } catch {
-      setCodeError("Error de conexión");
-    } finally {
-      setIsSending(false);
-    }
-  };
-
-  const handleFinalSubmit = async () => {
-    if (!name.trim() || !phone.trim()) return;
-    setIsSubmitting(true);
-    try {
-      const res = await fetch("/api/routes", {
+      const res = await fetch("/api/check-matches", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email, name, phone, userType,
-          originAddress, originLat, originLng,
-          destinationAddress, destinationLat, destinationLng,
-          cargoType: userType === "enviador" ? cargoType : null,
-          palletCount: userType === "enviador" ? Number(palletCount) || null : null,
-          weightKg: userType === "enviador" ? Number(weightKg) || null : null,
-          cargoDescription: userType === "enviador" ? cargoDescription : null,
+          originLat: checkOriginLat,
+          originLng: checkOriginLng,
+          destinationLat: checkDestLat,
+          destinationLng: checkDestLng,
         }),
       });
-      if (res.ok) setStep("done");
+      const data = await res.json();
+      if (res.ok) setMatchCount(data.matchCount);
     } catch {
-      // handle error
+      // ignore
     } finally {
-      setIsSubmitting(false);
+      setIsChecking(false);
     }
-  };
-
-  const resetForm = () => {
-    setStep("role");
-    setUserType(null);
-    setOriginAddress(""); setOriginLat(undefined); setOriginLng(undefined);
-    setDestinationAddress(""); setDestinationLat(undefined); setDestinationLng(undefined);
-    setCargoType("general"); setPalletCount(""); setWeightKg(""); setCargoDescription("");
-    setEmail(""); setVerificationCode(""); setName(""); setPhone("");
   };
 
   return (
@@ -143,20 +52,13 @@ export default function Home() {
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             <a href="#como-funciona" className="hover:text-blue-600 transition-colors">Cómo funciona</a>
             <a href="#beneficios" className="hover:text-blue-600 transition-colors">Beneficios</a>
-            <a href="#publicar" className="hover:text-blue-600 transition-colors">Publicar ruta</a>
+            <a href="#buscar" className="hover:text-blue-600 transition-colors">Buscar matches</a>
           </div>
-          <a
-            href="#publicar"
-            className="bg-blue-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-blue-700 transition-colors"
-          >
-            Empezar
-          </a>
         </div>
       </nav>
 
-      {/* ─── Hero Section ─── */}
+      {/* ─── Hero with CTA Buttons ─── */}
       <section className="pt-32 pb-20 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white relative overflow-hidden">
-        {/* Background pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl" />
           <div className="absolute bottom-10 right-20 w-96 h-96 bg-blue-300 rounded-full blur-3xl" />
@@ -167,24 +69,44 @@ export default function Home() {
             <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-6">
               Cero Viajes<br />Vacíos
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed max-w-2xl">
+            <p className="text-xl md:text-2xl text-blue-100 mb-10 leading-relaxed max-w-2xl">
               Conectamos transportistas que vuelven con espacio disponible con
               quienes necesitan enviar carga en la misma dirección.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a
-                href="#publicar"
-                className="inline-flex items-center justify-center bg-white text-blue-700 px-8 py-4 rounded-full text-lg font-bold hover:bg-blue-50 transition-colors shadow-lg"
-              >
-                Publicar mi ruta
-              </a>
-              <a
-                href="#como-funciona"
-                className="inline-flex items-center justify-center border-2 border-white/30 text-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/10 transition-colors"
-              >
-                Cómo funciona
-              </a>
-            </div>
+          </div>
+
+          {/* ─── Prominent CTA Buttons ─── */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl">
+            <a
+              href="/transportista"
+              className="bg-white rounded-2xl p-8 text-left group hover:scale-[1.02] transition-all shadow-xl"
+            >
+              <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-blue-600 transition-colors">
+                <span className="text-3xl group-hover:brightness-0 group-hover:invert transition-all">🚛</span>
+              </div>
+              <div className="text-xl font-bold text-gray-900 mb-2">Soy Transportista</div>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                Tengo espacio disponible en mi camión de vuelta y quiero ganar dinero extra.
+              </p>
+              <div className="mt-4 text-blue-600 font-semibold text-sm group-hover:underline">
+                Publicar mi ruta →
+              </div>
+            </a>
+            <a
+              href="/enviador"
+              className="bg-white rounded-2xl p-8 text-left group hover:scale-[1.02] transition-all shadow-xl"
+            >
+              <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-blue-600 transition-colors">
+                <span className="text-3xl group-hover:brightness-0 group-hover:invert transition-all">📦</span>
+              </div>
+              <div className="text-xl font-bold text-gray-900 mb-2">Necesito Enviar</div>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                Tengo carga que necesito mover de un punto a otro de forma económica.
+              </p>
+              <div className="mt-4 text-blue-600 font-semibold text-sm group-hover:underline">
+                Publicar mi envío →
+              </div>
+            </a>
           </div>
 
           {/* Stats bar */}
@@ -252,8 +174,78 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ─── Check Matches Section ─── */}
+      <section id="buscar" className="py-20">
+        <div className="max-w-2xl mx-auto px-6">
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">
+            Consulta matches disponibles
+          </h2>
+          <p className="text-center text-gray-500 mb-10 max-w-xl mx-auto">
+            Ingresa tu origen y destino para ver cuántas rutas compatibles existen. No se muestran detalles de las rutas.
+          </p>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-5">
+            <AddressInput
+              label="Origen"
+              placeholder="Escribe la dirección de origen..."
+              value={checkOriginAddress}
+              onSelect={(addr, lat, lng) => {
+                setCheckOriginAddress(addr);
+                setCheckOriginLat(lat);
+                setCheckOriginLng(lng);
+                setMatchCount(null);
+              }}
+            />
+            <AddressInput
+              label="Destino"
+              placeholder="Escribe la dirección de destino..."
+              value={checkDestAddress}
+              onSelect={(addr, lat, lng) => {
+                setCheckDestAddress(addr);
+                setCheckDestLat(lat);
+                setCheckDestLng(lng);
+                setMatchCount(null);
+              }}
+            />
+
+            <button
+              onClick={handleCheckMatches}
+              disabled={!checkOriginLat || !checkDestLat || isChecking}
+              className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-lg"
+            >
+              {isChecking ? "Buscando..." : "Ver matches disponibles"}
+            </button>
+
+            {matchCount !== null && (
+              <div className={`text-center p-6 rounded-xl ${matchCount > 0 ? "bg-green-50 border border-green-200" : "bg-gray-50 border border-gray-200"}`}>
+                <div className={`text-4xl font-bold mb-2 ${matchCount > 0 ? "text-green-600" : "text-gray-400"}`}>
+                  {matchCount}
+                </div>
+                <p className={`text-sm ${matchCount > 0 ? "text-green-700" : "text-gray-500"}`}>
+                  {matchCount === 0
+                    ? "No hay rutas compatibles por ahora. Publica tu ruta y te avisaremos cuando haya un match."
+                    : matchCount === 1
+                      ? "ruta compatible encontrada dentro de 2 km"
+                      : "rutas compatibles encontradas dentro de 2 km"}
+                </p>
+                {matchCount > 0 && (
+                  <div className="mt-4 flex gap-3 justify-center">
+                    <a href="/transportista" className="text-sm bg-blue-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-blue-700 transition-colors">
+                      Soy transportista
+                    </a>
+                    <a href="/enviador" className="text-sm bg-blue-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-blue-700 transition-colors">
+                      Necesito enviar
+                    </a>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
       {/* ─── Beneficios ─── */}
-      <section id="beneficios" className="py-20">
+      <section id="beneficios" className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16">
             Tu aliado de transporte 24/7
@@ -303,236 +295,27 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── Role Selection & Form Widget ─── */}
-      <section id="publicar" className="py-20 bg-gray-50">
-        <div className="max-w-2xl mx-auto px-6">
-          {/* Step 1: Role */}
-          {step === "role" && (
-            <>
-              <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">
-                Publica tu ruta
-              </h2>
-              <p className="text-center text-gray-500 mb-10">
-                Elige tu perfil para comenzar
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <button
-                  onClick={() => handleSelectRole("transportista")}
-                  className="bg-white p-8 rounded-2xl border-2 border-gray-100 hover:border-blue-500 hover:shadow-lg transition-all text-left group"
-                >
-                  <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-blue-600 transition-colors">
-                    <span className="text-2xl group-hover:brightness-0 group-hover:invert transition-all">🚛</span>
-                  </div>
-                  <div className="text-lg font-bold text-gray-900 mb-2">Soy Transportista</div>
-                  <p className="text-sm text-gray-500 leading-relaxed">
-                    Tengo espacio disponible en mi camión de vuelta y quiero ganar dinero extra.
-                  </p>
-                </button>
-                <button
-                  onClick={() => handleSelectRole("enviador")}
-                  className="bg-white p-8 rounded-2xl border-2 border-gray-100 hover:border-blue-500 hover:shadow-lg transition-all text-left group"
-                >
-                  <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-blue-600 transition-colors">
-                    <span className="text-2xl group-hover:brightness-0 group-hover:invert transition-all">📦</span>
-                  </div>
-                  <div className="text-lg font-bold text-gray-900 mb-2">Necesito Enviar</div>
-                  <p className="text-sm text-gray-500 leading-relaxed">
-                    Tengo carga que necesito mover de un punto a otro de forma económica.
-                  </p>
-                </button>
-              </div>
-            </>
-          )}
-
-          {/* Step 2: Route & Cargo */}
-          {step === "route" && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900">
-                  {userType === "transportista"
-                    ? "¿Cuál es tu ruta de retorno?"
-                    : "¿De dónde a dónde necesitas enviar?"}
-                </h3>
-                <button onClick={() => { setStep("role"); setUserType(null); }}
-                  className="text-sm text-blue-600 hover:underline font-medium">
-                  Volver
-                </button>
-              </div>
-
-              <div className="space-y-5">
-                <AddressInput label="Origen" placeholder="Escribe la dirección de origen..."
-                  value={originAddress}
-                  onSelect={(addr, lat, lng) => { setOriginAddress(addr); setOriginLat(lat); setOriginLng(lng); }} />
-
-                <AddressInput label="Destino" placeholder="Escribe la dirección de destino..."
-                  value={destinationAddress}
-                  onSelect={(addr, lat, lng) => { setDestinationAddress(addr); setDestinationLat(lat); setDestinationLng(lng); }} />
-
-                {(originLat || destinationLat) && (
-                  <MapPreviewDynamic originLat={originLat} originLng={originLng}
-                    destinationLat={destinationLat} destinationLng={destinationLng} />
-                )}
-
-                {userType === "enviador" && (
-                  <div className="space-y-4 p-5 bg-gray-50 rounded-xl">
-                    <h4 className="font-semibold text-gray-800">Detalles de la carga</h4>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de carga</label>
-                      <select value={cargoType} onChange={(e) => setCargoType(e.target.value as "general" | "refrigerated")}
-                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="general">General (palletizado)</option>
-                        <option value="refrigerated">Refrigerado</option>
-                      </select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Cantidad de pallets</label>
-                        <input type="number" min="1" value={palletCount} onChange={(e) => setPalletCount(e.target.value)}
-                          placeholder="Ej: 4" className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Peso estimado (kg)</label>
-                        <input type="number" min="1" value={weightKg} onChange={(e) => setWeightKg(e.target.value)}
-                          placeholder="Ej: 500" className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Descripción de la carga</label>
-                      <textarea value={cargoDescription} onChange={(e) => setCargoDescription(e.target.value)}
-                        placeholder="Ej: Cajas de frutas, pallets envueltos..." rows={2}
-                        className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
-                    </div>
-                  </div>
-                )}
-
-                <button onClick={handleRouteSubmit} disabled={!originLat || !destinationLat}
-                  className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-lg">
-                  Continuar
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Email */}
-          {step === "email" && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-gray-900">Verifica tu email</h3>
-                <button onClick={() => setStep("route")} className="text-sm text-blue-600 hover:underline font-medium">Volver</button>
-              </div>
-              <p className="text-gray-500 text-sm mb-6">Te enviaremos un código de 6 dígitos para verificar tu identidad.</p>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                    placeholder="tu@email.com"
-                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
-                    onKeyDown={(e) => e.key === "Enter" && handleSendVerification()} />
-                  {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
-                </div>
-                <button onClick={handleSendVerification} disabled={isSending}
-                  className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors text-lg">
-                  {isSending ? "Enviando..." : "Enviar código"}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 4: Verify */}
-          {step === "verify" && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Ingresa el código</h3>
-              <p className="text-gray-500 text-sm mb-6">
-                Enviamos un código de 6 dígitos a <strong className="text-gray-700">{email}</strong>
-              </p>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Código de verificación</label>
-                  <input type="text" value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    placeholder="123456" maxLength={6}
-                    className="w-full px-3 py-3 border border-gray-300 rounded-lg text-center text-2xl tracking-[0.3em] focus:ring-2 focus:ring-blue-500"
-                    onKeyDown={(e) => e.key === "Enter" && handleVerifyCode()} />
-                  {codeError && <p className="text-red-500 text-sm mt-1">{codeError}</p>}
-                </div>
-                <button onClick={handleVerifyCode} disabled={isSending}
-                  className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors text-lg">
-                  {isSending ? "Verificando..." : "Verificar"}
-                </button>
-                <button onClick={() => setStep("email")} className="w-full text-sm text-blue-600 hover:underline font-medium">
-                  Cambiar email
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 5: Contact */}
-          {step === "contact" && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Tus datos de contacto</h3>
-              <p className="text-gray-500 text-sm mb-6">Esta información se usará para conectarte con tu match.</p>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Nombre completo</label>
-                  <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-                    placeholder="Juan Pérez" className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                  <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+56 9 1234 5678" className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input type="email" value={email} disabled
-                    className="w-full px-3 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-500" />
-                </div>
-                <button onClick={handleFinalSubmit} disabled={!name.trim() || !phone.trim() || isSubmitting}
-                  className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-40 transition-colors text-lg">
-                  {isSubmitting ? "Publicando..." : "Publicar mi ruta"}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 6: Done */}
-          {step === "done" && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center">
-              <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-3">¡Ruta publicada!</h3>
-              <p className="text-gray-500 mb-8 max-w-md mx-auto">
-                Tu ruta ha sido registrada. Te contactaremos cuando encontremos un match compatible dentro de 2 km.
-              </p>
-              <button onClick={resetForm}
-                className="bg-blue-600 text-white px-8 py-3.5 rounded-xl font-bold hover:bg-blue-700 transition-colors text-lg">
-                Publicar otra ruta
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
-
       {/* ─── CTA Banner ─── */}
-      {step === "role" && (
-        <section className="py-20 bg-blue-600 text-white text-center">
-          <div className="max-w-3xl mx-auto px-6">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              ¿Listo para eliminar los viajes vacíos?
-            </h2>
-            <p className="text-blue-100 text-lg mb-8">
-              Publica tu ruta gratis y encuentra un match hoy mismo.
-            </p>
-            <a href="#publicar"
+      <section className="py-20 bg-blue-600 text-white text-center">
+        <div className="max-w-3xl mx-auto px-6">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            ¿Listo para eliminar los viajes vacíos?
+          </h2>
+          <p className="text-blue-100 text-lg mb-8">
+            Publica tu ruta gratis y encuentra un match hoy mismo.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/transportista"
               className="inline-flex items-center justify-center bg-white text-blue-700 px-10 py-4 rounded-full text-lg font-bold hover:bg-blue-50 transition-colors shadow-lg">
-              Empezar ahora
+              Soy Transportista
+            </a>
+            <a href="/enviador"
+              className="inline-flex items-center justify-center border-2 border-white/30 text-white px-10 py-4 rounded-full text-lg font-bold hover:bg-white/10 transition-colors">
+              Necesito Enviar
             </a>
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       {/* ─── Footer ─── */}
       <footer className="bg-gray-900 text-gray-400 py-12">
@@ -554,7 +337,7 @@ export default function Home() {
               <ul className="space-y-2 text-sm">
                 <li><a href="#como-funciona" className="hover:text-white transition-colors">Cómo funciona</a></li>
                 <li><a href="#beneficios" className="hover:text-white transition-colors">Beneficios</a></li>
-                <li><a href="#publicar" className="hover:text-white transition-colors">Publicar ruta</a></li>
+                <li><a href="#buscar" className="hover:text-white transition-colors">Buscar matches</a></li>
               </ul>
             </div>
             <div>
