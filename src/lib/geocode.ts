@@ -18,8 +18,14 @@ export interface GeocodeSuggestion {
   };
 }
 
+/** Extract a number from the user query that might be a house number */
+function extractNumberFromQuery(query: string): string | null {
+  const match = query.match(/\b(\d{2,6})\b/);
+  return match ? match[1] : null;
+}
+
 /** Build a street-address-first label from structured address parts */
-function formatAddress(s: GeocodeSuggestion): string {
+function formatAddress(s: GeocodeSuggestion, query: string): string {
   const a = s.address;
   if (!a) return s.display_name;
 
@@ -27,7 +33,18 @@ function formatAddress(s: GeocodeSuggestion): string {
 
   // Street address (number + road)
   if (a.road) {
-    parts.push(a.house_number ? `${a.house_number} ${a.road}` : a.road);
+    let street = a.road;
+    // If Nominatim returned a house number, use it
+    if (a.house_number) {
+      street = `${a.house_number} ${a.road}`;
+    } else {
+      // Try to extract number from user's original query
+      const num = extractNumberFromQuery(query);
+      if (num) {
+        street = `${num} ${a.road}`;
+      }
+    }
+    parts.push(street);
   }
 
   // Neighbourhood / suburb
@@ -37,9 +54,6 @@ function formatAddress(s: GeocodeSuggestion): string {
   // City
   const city = a.city || a.town || a.village;
   if (city) parts.push(city);
-
-  // State / region
-  if (a.state) parts.push(a.state);
 
   // If we couldn't build anything useful, fall back to display_name
   if (parts.length === 0) return s.display_name;
@@ -76,7 +90,7 @@ export async function searchAddress(
 
   // Replace display_name with street-address-first format
   for (const r of results) {
-    r.display_name = formatAddress(r);
+    r.display_name = formatAddress(r, query);
   }
 
   return results;
