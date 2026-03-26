@@ -373,7 +373,7 @@ export default function Home() {
             <div>
               <h4 className="font-semibold text-white mb-4">Contacto</h4>
               <ul className="space-y-2 text-sm">
-                <li>contacto@luxutech.cl</li>
+                <li>contacto@luxutech.com</li>
                 <li>Santiago, Chile</li>
               </ul>
             </div>

@@ -24,7 +24,7 @@ export default function PrivacidadPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-3">1. Responsable del tratamiento</h2>
             <p>
               LuxuTech SpA (&quot;LuxuTech&quot;, &quot;nosotros&quot;) es responsable del tratamiento de los datos personales
-              recopilados a través de la plataforma disponible en luxutech.cl y sus subdominios. Domicilio: Santiago, Chile.
+              recopilados a través de la plataforma disponible en luxutech.com y sus subdominios. Domicilio: Santiago, Chile.
             </p>
           </section>
 
@@ -100,7 +100,7 @@ export default function PrivacidadPage() {
               <li><strong>Oposición:</strong> oponerte al tratamiento de tus datos en determinadas circunstancias.</li>
             </ul>
             <p className="mt-2">
-              Para ejercer estos derechos, contáctanos a <strong>contacto@luxutech.cl</strong>.
+              Para ejercer estos derechos, contáctanos a <strong>contacto@luxutech.com</strong>.
               Responderemos en un plazo máximo de 15 días hábiles.
             </p>
           </section>
@@ -126,7 +126,7 @@ export default function PrivacidadPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-3">11. Contacto</h2>
             <p>
               Si tienes preguntas sobre esta política de privacidad, puedes contactarnos en:<br />
-              <strong>Email:</strong> contacto@luxutech.cl<br />
+              <strong>Email:</strong> contacto@luxutech.com<br />
               <strong>Ubicación:</strong> Santiago, Chile
             </p>
           </section>

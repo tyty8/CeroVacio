@@ -155,7 +155,7 @@ export default function TerminosPage() {
             <h2 className="text-xl font-bold text-gray-900 mb-3">13. Contacto</h2>
             <p>
               Si tienes preguntas sobre estos Términos y Condiciones, puedes contactarnos en:<br />
-              <strong>Email:</strong> contacto@luxutech.cl<br />
+              <strong>Email:</strong> contacto@luxutech.com<br />
               <strong>Ubicación:</strong> Santiago, Chile
             </p>
           </section>
