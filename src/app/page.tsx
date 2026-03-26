@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import AddressInput from "@/components/AddressInput";
 
 type UserType = "transportista" | "enviador";
@@ -19,28 +19,33 @@ export default function Home() {
 
   const today = new Date().toISOString().split("T")[0];
   const canSearch = !!originLat && !!destLat;
+  const lastCheckedRef = useRef("");
 
-  const handleCheckMatches = async () => {
-    if (!canSearch) return;
+  // Auto-check matches when both addresses are selected
+  useEffect(() => {
+    if (!originLat || !originLng || !destLat || !destLng) {
+      setMatchCount(null);
+      return;
+    }
+    const key = `${originLat},${originLng},${destLat},${destLng}`;
+    if (key === lastCheckedRef.current) return;
+    lastCheckedRef.current = key;
+
     setIsChecking(true);
     setMatchCount(null);
-    try {
-      const res = await fetch("/api/check-matches", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          originLat, originLng,
-          destinationLat: destLat, destinationLng: destLng,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok) setMatchCount(data.matchCount);
-    } catch {
-      // ignore
-    } finally {
-      setIsChecking(false);
-    }
-  };
+    fetch("/api/check-matches", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        originLat, originLng,
+        destinationLat: destLat, destinationLng: destLng,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => setMatchCount(data.matchCount))
+      .catch(() => {})
+      .finally(() => setIsChecking(false));
+  }, [originLat, originLng, destLat, destLng]);
 
   const handlePublish = () => {
     const params = new URLSearchParams();
@@ -156,27 +161,25 @@ export default function Home() {
               />
             </div>
 
-            {/* Action buttons */}
-            <div className="md:col-span-2 flex flex-col gap-2">
-              <button
-                onClick={handleCheckMatches}
-                disabled={!canSearch || isChecking}
-                className="w-full py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm"
-              >
-                {isChecking ? "Buscando..." : "Ver matches"}
-              </button>
+            {/* Action button */}
+            <div className="md:col-span-2">
               <button
                 onClick={handlePublish}
                 disabled={!canSearch}
-                className="w-full py-2.5 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm"
+                className="w-full py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm"
               >
                 Publicar ruta
               </button>
             </div>
           </div>
 
-          {/* Match result */}
-          {matchCount !== null && (
+          {/* Match result (auto) */}
+          {isChecking && (
+            <div className="mt-6 text-center p-4 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-500">
+              Buscando rutas compatibles...
+            </div>
+          )}
+          {!isChecking && matchCount !== null && (
             <div className={`mt-6 text-center p-5 rounded-xl ${matchCount > 0 ? "bg-green-50 border border-green-200" : "bg-gray-50 border border-gray-200"}`}>
               <div className="flex items-center justify-center gap-3">
                 <span className={`text-3xl font-bold ${matchCount > 0 ? "text-green-600" : "text-gray-400"}`}>
