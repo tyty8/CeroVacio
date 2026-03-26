@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { routes, users } from "@/lib/schema";
 import { eq, count } from "drizzle-orm";
 import { haversineKm } from "@/lib/haversine";
+import { getDrivingDistance } from "@/lib/driving-distance";
 import { RouteActions, MatchActions } from "@/components/AdminActions";
 import RadiusSlider from "@/components/RadiusSlider";
 import Link from "next/link";
@@ -16,6 +17,10 @@ interface Match {
   routeB: RouteWithUser;
   originDistanceKm: number;
   destinationDistanceKm: number;
+  originDrivingKm?: number;
+  originDrivingMin?: number;
+  destDrivingKm?: number;
+  destDrivingMin?: number;
 }
 
 export const dynamic = "force-dynamic";
@@ -74,6 +79,36 @@ export default async function AdminPage({
             });
           }
         }
+      }
+    }
+
+    // Fetch driving distances for matches (parallel, max 5 at a time to respect rate limits)
+    if (tab === "active" && matches.length > 0) {
+      const batchSize = 5;
+      for (let b = 0; b < matches.length; b += batchSize) {
+        const batch = matches.slice(b, b + batchSize);
+        await Promise.all(
+          batch.map(async (match) => {
+            const [originDriving, destDriving] = await Promise.all([
+              getDrivingDistance(
+                match.routeA.route.originLat, match.routeA.route.originLng,
+                match.routeB.route.originLat, match.routeB.route.originLng
+              ),
+              getDrivingDistance(
+                match.routeA.route.destinationLat, match.routeA.route.destinationLng,
+                match.routeB.route.destinationLat, match.routeB.route.destinationLng
+              ),
+            ]);
+            if (originDriving) {
+              match.originDrivingKm = originDriving.distanceKm;
+              match.originDrivingMin = originDriving.durationMin;
+            }
+            if (destDriving) {
+              match.destDrivingKm = destDriving.distanceKm;
+              match.destDrivingMin = destDriving.durationMin;
+            }
+          })
+        );
       }
     }
   } catch (e) {
@@ -152,9 +187,20 @@ export default async function AdminPage({
                         MATCH
                       </span>
                       <div className="flex items-center gap-4">
-                        <span className="text-xs text-gray-400">
-                          Origen: {match.originDistanceKm} km | Destino: {match.destinationDistanceKm} km
-                        </span>
+                        <div className="text-xs text-gray-400 text-right">
+                          <div>
+                            Origen: {match.originDistanceKm} km línea recta
+                            {match.originDrivingKm != null && (
+                              <span className="text-blue-600 font-semibold"> → {match.originDrivingKm} km ruta ({match.originDrivingMin} min)</span>
+                            )}
+                          </div>
+                          <div>
+                            Destino: {match.destinationDistanceKm} km línea recta
+                            {match.destDrivingKm != null && (
+                              <span className="text-blue-600 font-semibold"> → {match.destDrivingKm} km ruta ({match.destDrivingMin} min)</span>
+                            )}
+                          </div>
+                        </div>
                         <MatchActions routeAId={match.routeA.route.id} routeBId={match.routeB.route.id} />
                       </div>
                     </div>
