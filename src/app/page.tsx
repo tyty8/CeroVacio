@@ -320,7 +320,7 @@ export default function Home() {
       {/* ─── Footer ─── */}
       <footer className="bg-gray-900 text-gray-400 py-12">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
@@ -338,6 +338,13 @@ export default function Home() {
                 <li><a href="#como-funciona" className="hover:text-white transition-colors">Cómo funciona</a></li>
                 <li><a href="#beneficios" className="hover:text-white transition-colors">Beneficios</a></li>
                 <li><a href="#buscar" className="hover:text-white transition-colors">Buscar matches</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-white mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm">
+                <li><a href="/privacidad" className="hover:text-white transition-colors">Política de Privacidad</a></li>
+                <li><a href="/terminos" className="hover:text-white transition-colors">Términos y Condiciones</a></li>
               </ul>
             </div>
             <div>

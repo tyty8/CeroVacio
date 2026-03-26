@@ -364,6 +364,10 @@ export default function RouteForm({ userType, title, routeQuestion, children }: 
             <span className="text-lg font-bold text-white">LuxuTech</span>
           </div>
           <p className="text-sm mb-6">Conectamos transportistas con enviadores para eliminar los viajes vacíos en Chile.</p>
+          <div className="flex gap-6 mb-6 text-sm">
+            <a href="/privacidad" className="hover:text-white transition-colors">Política de Privacidad</a>
+            <a href="/terminos" className="hover:text-white transition-colors">Términos y Condiciones</a>
+          </div>
           <div className="border-t border-gray-800 pt-6 text-sm">
             &copy; {new Date().getFullYear()} LuxuTech. Todos los derechos reservados.
           </div>
