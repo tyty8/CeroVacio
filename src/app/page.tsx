@@ -3,19 +3,25 @@
 import { useState } from "react";
 import AddressInput from "@/components/AddressInput";
 
+type UserType = "transportista" | "enviador";
+
 export default function Home() {
-  // Check matches state
-  const [checkOriginAddress, setCheckOriginAddress] = useState("");
-  const [checkOriginLat, setCheckOriginLat] = useState<number | undefined>();
-  const [checkOriginLng, setCheckOriginLng] = useState<number | undefined>();
-  const [checkDestAddress, setCheckDestAddress] = useState("");
-  const [checkDestLat, setCheckDestLat] = useState<number | undefined>();
-  const [checkDestLng, setCheckDestLng] = useState<number | undefined>();
+  const [userType, setUserType] = useState<UserType>("enviador");
+  const [originAddress, setOriginAddress] = useState("");
+  const [originLat, setOriginLat] = useState<number | undefined>();
+  const [originLng, setOriginLng] = useState<number | undefined>();
+  const [destAddress, setDestAddress] = useState("");
+  const [destLat, setDestLat] = useState<number | undefined>();
+  const [destLng, setDestLng] = useState<number | undefined>();
+  const [pickupDate, setPickupDate] = useState("");
   const [matchCount, setMatchCount] = useState<number | null>(null);
   const [isChecking, setIsChecking] = useState(false);
 
+  const today = new Date().toISOString().split("T")[0];
+  const canSearch = !!originLat && !!destLat;
+
   const handleCheckMatches = async () => {
-    if (!checkOriginLat || !checkDestLat) return;
+    if (!canSearch) return;
     setIsChecking(true);
     setMatchCount(null);
     try {
@@ -23,10 +29,8 @@ export default function Home() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          originLat: checkOriginLat,
-          originLng: checkOriginLng,
-          destinationLat: checkDestLat,
-          destinationLng: checkDestLng,
+          originLat, originLng,
+          destinationLat: destLat, destinationLng: destLng,
         }),
       });
       const data = await res.json();
@@ -36,6 +40,18 @@ export default function Home() {
     } finally {
       setIsChecking(false);
     }
+  };
+
+  const handlePublish = () => {
+    const params = new URLSearchParams();
+    if (originAddress) params.set("origin", originAddress);
+    if (originLat) params.set("olat", String(originLat));
+    if (originLng) params.set("olng", String(originLng));
+    if (destAddress) params.set("dest", destAddress);
+    if (destLat) params.set("dlat", String(destLat));
+    if (destLng) params.set("dlng", String(destLng));
+    if (pickupDate) params.set("date", pickupDate);
+    window.location.href = `/${userType}?${params.toString()}`;
   };
 
   return (
@@ -52,80 +68,140 @@ export default function Home() {
           <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
             <a href="#como-funciona" className="hover:text-blue-600 transition-colors">Cómo funciona</a>
             <a href="#beneficios" className="hover:text-blue-600 transition-colors">Beneficios</a>
-            <a href="#buscar" className="hover:text-blue-600 transition-colors">Buscar matches</a>
           </div>
         </div>
       </nav>
 
-      {/* ─── Hero with CTA Buttons ─── */}
-      <section className="pt-32 pb-20 bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900 text-white relative overflow-hidden">
+      {/* ─── Hero + Search Bar ─── */}
+      <section className="pt-28 pb-40 md:pb-44 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl" />
           <div className="absolute bottom-10 right-20 w-96 h-96 bg-blue-300 rounded-full blur-3xl" />
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 relative">
-          <div className="max-w-3xl">
-            <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-6">
-              Cero Viajes<br />Vacíos
-            </h1>
-            <p className="text-xl md:text-2xl text-blue-100 mb-10 leading-relaxed max-w-2xl">
-              Conectamos transportistas que vuelven con espacio disponible con
-              quienes necesitan enviar carga en la misma dirección.
-            </p>
-          </div>
-
-          {/* ─── Prominent CTA Buttons ─── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl">
-            <a
-              href="/transportista"
-              className="bg-white rounded-2xl p-8 text-left group hover:scale-[1.02] transition-all shadow-xl"
-            >
-              <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-blue-600 transition-colors">
-                <span className="text-3xl group-hover:brightness-0 group-hover:invert transition-all">🚛</span>
-              </div>
-              <div className="text-xl font-bold text-gray-900 mb-2">Soy Transportista</div>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                Tengo espacio disponible en mi camión de vuelta y quiero ganar dinero extra.
-              </p>
-              <div className="mt-4 text-blue-600 font-semibold text-sm group-hover:underline">
-                Publicar mi ruta →
-              </div>
-            </a>
-            <a
-              href="/enviador"
-              className="bg-white rounded-2xl p-8 text-left group hover:scale-[1.02] transition-all shadow-xl"
-            >
-              <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mb-5 group-hover:bg-blue-600 transition-colors">
-                <span className="text-3xl group-hover:brightness-0 group-hover:invert transition-all">📦</span>
-              </div>
-              <div className="text-xl font-bold text-gray-900 mb-2">Necesito Enviar</div>
-              <p className="text-sm text-gray-500 leading-relaxed">
-                Tengo carga que necesito mover de un punto a otro de forma económica.
-              </p>
-              <div className="mt-4 text-blue-600 font-semibold text-sm group-hover:underline">
-                Publicar mi envío →
-              </div>
-            </a>
-          </div>
-
-          {/* Stats bar */}
-          <div className="mt-16 grid grid-cols-3 gap-8 max-w-xl">
-            <div>
-              <div className="text-3xl font-bold">2 km</div>
-              <div className="text-blue-200 text-sm mt-1">Radio de match</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold">$0</div>
-              <div className="text-blue-200 text-sm mt-1">Costo por publicar</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold">24/7</div>
-              <div className="text-blue-200 text-sm mt-1">Disponible siempre</div>
-            </div>
-          </div>
+        <div className="max-w-4xl mx-auto px-6 relative text-center">
+          <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-4">
+            Cero Viajes Vacíos
+          </h1>
+          <p className="text-lg md:text-xl text-blue-100 mb-2 max-w-2xl mx-auto">
+            Conectamos transportistas con enviadores en la misma ruta. Publica gratis, encuentra un match al instante.
+          </p>
         </div>
       </section>
+
+      {/* ─── Floating Search Card (overlaps hero) ─── */}
+      <div className="max-w-5xl mx-auto px-6 -mt-28 md:-mt-32 relative z-10 mb-12">
+        <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 md:p-8">
+          {/* User type toggle */}
+          <div className="flex gap-2 mb-6">
+            <button
+              onClick={() => setUserType("enviador")}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-colors ${
+                userType === "enviador"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              <span>📦</span> Necesito Enviar
+            </button>
+            <button
+              onClick={() => setUserType("transportista")}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-colors ${
+                userType === "transportista"
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+              }`}
+            >
+              <span>🚛</span> Soy Transportista
+            </button>
+          </div>
+
+          {/* Search fields */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+            {/* Origin */}
+            <div className="md:col-span-4">
+              <AddressInput
+                label="Origen"
+                placeholder="¿Desde dónde?"
+                value={originAddress}
+                onSelect={(addr, lat, lng) => {
+                  setOriginAddress(addr); setOriginLat(lat); setOriginLng(lng);
+                  setMatchCount(null);
+                }}
+              />
+            </div>
+
+            {/* Destination */}
+            <div className="md:col-span-4">
+              <AddressInput
+                label="Destino"
+                placeholder="¿Hacia dónde?"
+                value={destAddress}
+                onSelect={(addr, lat, lng) => {
+                  setDestAddress(addr); setDestLat(lat); setDestLng(lng);
+                  setMatchCount(null);
+                }}
+              />
+            </div>
+
+            {/* Date */}
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+              <input
+                type="date"
+                value={pickupDate}
+                onChange={(e) => setPickupDate(e.target.value)}
+                min={today}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+
+            {/* Action buttons */}
+            <div className="md:col-span-2 flex flex-col gap-2">
+              <button
+                onClick={handleCheckMatches}
+                disabled={!canSearch || isChecking}
+                className="w-full py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm"
+              >
+                {isChecking ? "Buscando..." : "Ver matches"}
+              </button>
+              <button
+                onClick={handlePublish}
+                disabled={!canSearch}
+                className="w-full py-2.5 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm"
+              >
+                Publicar ruta
+              </button>
+            </div>
+          </div>
+
+          {/* Match result */}
+          {matchCount !== null && (
+            <div className={`mt-6 text-center p-5 rounded-xl ${matchCount > 0 ? "bg-green-50 border border-green-200" : "bg-gray-50 border border-gray-200"}`}>
+              <div className="flex items-center justify-center gap-3">
+                <span className={`text-3xl font-bold ${matchCount > 0 ? "text-green-600" : "text-gray-400"}`}>
+                  {matchCount}
+                </span>
+                <p className={`text-sm text-left ${matchCount > 0 ? "text-green-700" : "text-gray-500"}`}>
+                  {matchCount === 0
+                    ? "No hay rutas compatibles por ahora. Publica tu ruta y te avisaremos cuando haya un match."
+                    : matchCount === 1
+                      ? "ruta compatible encontrada dentro de 2 km de tu origen y destino."
+                      : "rutas compatibles encontradas dentro de 2 km de tu origen y destino."}
+                </p>
+              </div>
+              {matchCount > 0 && (
+                <button
+                  onClick={handlePublish}
+                  className="mt-4 bg-blue-600 text-white px-8 py-2.5 rounded-full text-sm font-bold hover:bg-blue-700 transition-colors"
+                >
+                  Publicar y conectar ahora
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* ─── Cómo Funciona ─── */}
       <section id="como-funciona" className="py-20 bg-gray-50">
@@ -145,7 +221,7 @@ export default function Home() {
               <div className="text-sm font-bold text-blue-600 mb-2">PASO 1</div>
               <h3 className="text-xl font-bold text-gray-900 mb-3">Publica tu ruta</h3>
               <p className="text-gray-500">
-                Indica tu origen y destino. Si eres enviador, agrega los detalles de tu carga.
+                Indica tu origen, destino y fecha. Si eres enviador, agrega los detalles de tu carga.
               </p>
             </div>
 
@@ -174,78 +250,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── Check Matches Section ─── */}
-      <section id="buscar" className="py-20">
-        <div className="max-w-2xl mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">
-            Consulta matches disponibles
-          </h2>
-          <p className="text-center text-gray-500 mb-10 max-w-xl mx-auto">
-            Ingresa tu origen y destino para ver cuántas rutas compatibles existen. No se muestran detalles de las rutas.
-          </p>
-
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-5">
-            <AddressInput
-              label="Origen"
-              placeholder="Escribe la dirección de origen..."
-              value={checkOriginAddress}
-              onSelect={(addr, lat, lng) => {
-                setCheckOriginAddress(addr);
-                setCheckOriginLat(lat);
-                setCheckOriginLng(lng);
-                setMatchCount(null);
-              }}
-            />
-            <AddressInput
-              label="Destino"
-              placeholder="Escribe la dirección de destino..."
-              value={checkDestAddress}
-              onSelect={(addr, lat, lng) => {
-                setCheckDestAddress(addr);
-                setCheckDestLat(lat);
-                setCheckDestLng(lng);
-                setMatchCount(null);
-              }}
-            />
-
-            <button
-              onClick={handleCheckMatches}
-              disabled={!checkOriginLat || !checkDestLat || isChecking}
-              className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-lg"
-            >
-              {isChecking ? "Buscando..." : "Ver matches disponibles"}
-            </button>
-
-            {matchCount !== null && (
-              <div className={`text-center p-6 rounded-xl ${matchCount > 0 ? "bg-green-50 border border-green-200" : "bg-gray-50 border border-gray-200"}`}>
-                <div className={`text-4xl font-bold mb-2 ${matchCount > 0 ? "text-green-600" : "text-gray-400"}`}>
-                  {matchCount}
-                </div>
-                <p className={`text-sm ${matchCount > 0 ? "text-green-700" : "text-gray-500"}`}>
-                  {matchCount === 0
-                    ? "No hay rutas compatibles por ahora. Publica tu ruta y te avisaremos cuando haya un match."
-                    : matchCount === 1
-                      ? "ruta compatible encontrada dentro de 2 km"
-                      : "rutas compatibles encontradas dentro de 2 km"}
-                </p>
-                {matchCount > 0 && (
-                  <div className="mt-4 flex gap-3 justify-center">
-                    <a href="/transportista" className="text-sm bg-blue-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-blue-700 transition-colors">
-                      Soy transportista
-                    </a>
-                    <a href="/enviador" className="text-sm bg-blue-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-blue-700 transition-colors">
-                      Necesito enviar
-                    </a>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
       {/* ─── Beneficios ─── */}
-      <section id="beneficios" className="py-20 bg-gray-50">
+      <section id="beneficios" className="py-20">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16">
             Tu aliado de transporte 24/7
@@ -295,23 +301,41 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ─── Stats ─── */}
+      <section className="py-16 bg-blue-600 text-white">
+        <div className="max-w-5xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+          <div>
+            <div className="text-4xl font-bold mb-1">$0</div>
+            <div className="text-blue-200">Costo por publicar</div>
+          </div>
+          <div>
+            <div className="text-4xl font-bold mb-1">2 km</div>
+            <div className="text-blue-200">Radio de match</div>
+          </div>
+          <div>
+            <div className="text-4xl font-bold mb-1">24/7</div>
+            <div className="text-blue-200">Disponible siempre</div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── CTA Banner ─── */}
-      <section className="py-20 bg-blue-600 text-white text-center">
+      <section className="py-20 text-center">
         <div className="max-w-3xl mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             ¿Listo para eliminar los viajes vacíos?
           </h2>
-          <p className="text-blue-100 text-lg mb-8">
+          <p className="text-gray-500 text-lg mb-8">
             Publica tu ruta gratis y encuentra un match hoy mismo.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/transportista"
-              className="inline-flex items-center justify-center bg-white text-blue-700 px-10 py-4 rounded-full text-lg font-bold hover:bg-blue-50 transition-colors shadow-lg">
-              Soy Transportista
-            </a>
             <a href="/enviador"
-              className="inline-flex items-center justify-center border-2 border-white/30 text-white px-10 py-4 rounded-full text-lg font-bold hover:bg-white/10 transition-colors">
+              className="inline-flex items-center justify-center bg-blue-600 text-white px-10 py-4 rounded-full text-lg font-bold hover:bg-blue-700 transition-colors shadow-lg">
               Necesito Enviar
+            </a>
+            <a href="/transportista"
+              className="inline-flex items-center justify-center border-2 border-blue-600 text-blue-600 px-10 py-4 rounded-full text-lg font-bold hover:bg-blue-50 transition-colors">
+              Soy Transportista
             </a>
           </div>
         </div>
@@ -337,7 +361,6 @@ export default function Home() {
               <ul className="space-y-2 text-sm">
                 <li><a href="#como-funciona" className="hover:text-white transition-colors">Cómo funciona</a></li>
                 <li><a href="#beneficios" className="hover:text-white transition-colors">Beneficios</a></li>
-                <li><a href="#buscar" className="hover:text-white transition-colors">Buscar matches</a></li>
               </ul>
             </div>
             <div>

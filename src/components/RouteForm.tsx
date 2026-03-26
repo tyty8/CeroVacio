@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AddressInput from "@/components/AddressInput";
 import MapPreviewDynamic from "@/components/MapPreviewDynamic";
 
@@ -24,6 +24,18 @@ export default function RouteForm({ userType, title, routeQuestion, children }: 
   const [destinationLng, setDestinationLng] = useState<number | undefined>();
 
   const [pickupDate, setPickupDate] = useState("");
+
+  // Pre-fill from query params (passed from homepage search bar)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("origin")) setOriginAddress(params.get("origin")!);
+    if (params.get("olat")) setOriginLat(Number(params.get("olat")));
+    if (params.get("olng")) setOriginLng(Number(params.get("olng")));
+    if (params.get("dest")) setDestinationAddress(params.get("dest")!);
+    if (params.get("dlat")) setDestinationLat(Number(params.get("dlat")));
+    if (params.get("dlng")) setDestinationLng(Number(params.get("dlng")));
+    if (params.get("date")) setPickupDate(params.get("date")!);
+  }, []);
 
   const [cargoType, setCargoType] = useState<"general" | "refrigerated">("general");
   const [palletCount, setPalletCount] = useState("");
