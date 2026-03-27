@@ -56,15 +56,15 @@ export async function POST(request: Request) {
     // Send email via AWS SES
     await ses.send(
       new SendEmailCommand({
-        Source: process.env.SES_FROM_EMAIL || "noreply@cerovacio.cl",
+        Source: process.env.SES_FROM_EMAIL || "noreply@luxutech.com",
         Destination: { ToAddresses: [email] },
         Message: {
-          Subject: { Data: "Tu código de verificación - CeroVacío" },
+          Subject: { Data: "Tu código de verificación - LuxuTech" },
           Body: {
             Html: {
               Data: `
                 <div style="font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px;">
-                  <h2 style="color: #2563eb;">CeroVacío</h2>
+                  <h2 style="color: #2563eb;">LuxuTech</h2>
                   <p>Tu código de verificación es:</p>
                   <div style="background: #f3f4f6; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
                     <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1f2937;">${code}</span>
@@ -80,9 +80,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error sending verification:", error);
+    const message = error instanceof Error ? error.message : "Error desconocido";
+    console.error("Error sending verification:", message);
     return NextResponse.json(
-      { error: "Error al enviar el código" },
+      { error: `Error al enviar el código: ${message}` },
       { status: 500 }
     );
   }
