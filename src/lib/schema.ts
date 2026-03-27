@@ -27,6 +27,15 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const matchCache = pgTable("match_cache", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  coordKey: varchar("coord_key", { length: 100 }).notNull().unique(),
+  matchCount: integer("match_count").notNull(),
+  tomorrowCount: integer("tomorrow_count"),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const routes = pgTable("routes", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("user_id")

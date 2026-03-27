@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { routes } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { routes, matchCache } from "@/lib/schema";
+import { eq, gt } from "drizzle-orm";
 import { haversineKm } from "@/lib/haversine";
 
 /** Check if coordinates are within the Santiago metropolitan area */
@@ -9,15 +9,10 @@ function isInSantiago(lat: number, lng: number): boolean {
   return lat >= -33.7 && lat <= -33.2 && lng >= -70.9 && lng <= -70.4;
 }
 
-/** Deterministic pseudo-random number from coordinates (consistent for same input) */
-function seededRandom(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const seed = Math.abs(
-    Math.sin(lat1 * 1000) * 10000 +
-    Math.cos(lng1 * 1000) * 10000 +
-    Math.sin(lat2 * 1000) * 10000 +
-    Math.cos(lng2 * 1000) * 10000
-  );
-  return seed - Math.floor(seed); // 0-1
+/** Round coords to ~100m precision for cache key consistency */
+function coordKey(lat1: number, lng1: number, lat2: number, lng2: number): string {
+  const r = (n: number) => n.toFixed(3);
+  return `${r(lat1)},${r(lng1)},${r(lat2)},${r(lng2)}`;
 }
 
 export async function POST(request: Request) {
@@ -37,6 +32,23 @@ export async function POST(request: Request) {
       );
     }
 
+    const key = coordKey(originLat, originLng, destinationLat, destinationLng);
+
+    // Check cache first
+    const [cached] = await db
+      .select()
+      .from(matchCache)
+      .where(eq(matchCache.coordKey, key))
+      .limit(1);
+
+    if (cached && cached.expiresAt > new Date()) {
+      return NextResponse.json({
+        matchCount: cached.matchCount,
+        tomorrowCount: cached.tomorrowCount,
+      });
+    }
+
+    // Compute real matches
     const radiusKm = 2;
 
     const activeRoutes = await db
@@ -52,23 +64,19 @@ export async function POST(request: Request) {
     let matchCount = 0;
     for (const route of activeRoutes) {
       const originDist = haversineKm(
-        originLat,
-        originLng,
-        route.originLat,
-        route.originLng
+        originLat, originLng,
+        route.originLat, route.originLng
       );
       const destDist = haversineKm(
-        destinationLat,
-        destinationLng,
-        route.destinationLat,
-        route.destinationLng
+        destinationLat, destinationLng,
+        route.destinationLat, route.destinationLng
       );
       if (originDist <= radiusKm && destDist <= radiusKm) {
         matchCount++;
       }
     }
 
-    // For Santiago routes: ensure a minimum appearance of activity
+    // For Santiago: simulate activity if real matches are low
     const bothInSantiago =
       isInSantiago(originLat, originLng) &&
       isInSantiago(destinationLat, destinationLng);
@@ -76,16 +84,28 @@ export async function POST(request: Request) {
     let tomorrowCount: number | null = null;
 
     if (bothInSantiago && matchCount < 3) {
-      const rand = seededRandom(originLat, originLng, destinationLat, destinationLng);
+      const rand = Math.random();
 
       if (rand < 0.3) {
-        // ~30% chance: 0 today, but show tomorrow availability
         matchCount = 0;
-        tomorrowCount = 3 + Math.floor(rand * 30) % 9; // 3-11
+        tomorrowCount = 3 + Math.floor(Math.random() * 9); // 3-11
       } else {
-        // ~70% chance: show 3-11 routes
-        matchCount = 3 + Math.floor(rand * 100) % 9; // 3-11
+        matchCount = 3 + Math.floor(Math.random() * 9); // 3-11
       }
+    }
+
+    // Save to cache (24 hours)
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    if (cached) {
+      await db
+        .update(matchCache)
+        .set({ matchCount, tomorrowCount, expiresAt })
+        .where(eq(matchCache.coordKey, key));
+    } else {
+      await db
+        .insert(matchCache)
+        .values({ coordKey: key, matchCount, tomorrowCount, expiresAt });
     }
 
     return NextResponse.json({ matchCount, tomorrowCount });
