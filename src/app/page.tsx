@@ -15,6 +15,7 @@ export default function Home() {
   const [destLng, setDestLng] = useState<number | undefined>();
   const [pickupDate, setPickupDate] = useState("");
   const [matchCount, setMatchCount] = useState<number | null>(null);
+  const [tomorrowCount, setTomorrowCount] = useState<number | null>(null);
   const [isChecking, setIsChecking] = useState(false);
 
   const today = new Date().toISOString().split("T")[0];
@@ -25,6 +26,7 @@ export default function Home() {
   useEffect(() => {
     if (!originLat || !originLng || !destLat || !destLng) {
       setMatchCount(null);
+      setTomorrowCount(null);
       return;
     }
     const key = `${originLat},${originLng},${destLat},${destLng}`;
@@ -33,6 +35,7 @@ export default function Home() {
 
     setIsChecking(true);
     setMatchCount(null);
+    setTomorrowCount(null);
     fetch("/api/check-matches", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -42,7 +45,10 @@ export default function Home() {
       }),
     })
       .then((res) => res.json())
-      .then((data) => setMatchCount(data.matchCount))
+      .then((data) => {
+        setMatchCount(data.matchCount);
+        setTomorrowCount(data.tomorrowCount ?? null);
+      })
       .catch(() => {})
       .finally(() => setIsChecking(false));
   }, [originLat, originLng, destLat, destLng]);
@@ -180,26 +186,46 @@ export default function Home() {
             </div>
           )}
           {!isChecking && matchCount !== null && (
-            <div className={`mt-6 text-center p-5 rounded-xl ${matchCount > 0 ? "bg-green-50 border border-green-200" : "bg-gray-50 border border-gray-200"}`}>
-              <div className="flex items-center justify-center gap-3">
-                <span className={`text-3xl font-bold ${matchCount > 0 ? "text-green-600" : "text-gray-400"}`}>
-                  {matchCount}
-                </span>
-                <p className={`text-sm text-left ${matchCount > 0 ? "text-green-700" : "text-gray-500"}`}>
-                  {matchCount === 0
-                    ? "No hay rutas compatibles por ahora. Publica tu ruta y te avisaremos cuando haya un match."
-                    : matchCount === 1
-                      ? "ruta compatible encontrada dentro de 2 km de tu origen y destino."
-                      : "rutas compatibles encontradas dentro de 2 km de tu origen y destino."}
-                </p>
-              </div>
-              {matchCount > 0 && (
-                <button
-                  onClick={handlePublish}
-                  className="mt-4 bg-blue-600 text-white px-8 py-2.5 rounded-full text-sm font-bold hover:bg-blue-700 transition-colors"
-                >
-                  Publicar y conectar ahora
-                </button>
+            <div className={`mt-6 text-center p-5 rounded-xl ${matchCount > 0 ? "bg-green-50 border border-green-200" : "bg-amber-50 border border-amber-200"}`}>
+              {matchCount > 0 ? (
+                <>
+                  <div className="flex items-center justify-center gap-3">
+                    <span className="text-3xl font-bold text-green-600">
+                      {matchCount}
+                    </span>
+                    <p className="text-sm text-left text-green-700">
+                      {matchCount === 1
+                        ? "ruta compatible encontrada dentro de 2 km de tu origen y destino."
+                        : "rutas compatibles encontradas dentro de 2 km de tu origen y destino."}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handlePublish}
+                    className="mt-4 bg-blue-600 text-white px-8 py-2.5 rounded-full text-sm font-bold hover:bg-blue-700 transition-colors"
+                  >
+                    Publicar y conectar ahora
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm text-amber-800 font-medium">
+                    0 rutas disponibles hoy.
+                  </p>
+                  {tomorrowCount != null && tomorrowCount > 0 && (
+                    <p className="text-sm text-amber-700 mt-1">
+                      Mañana hay <strong>{tomorrowCount} rutas</strong> disponibles en esta dirección.
+                    </p>
+                  )}
+                  <p className="text-xs text-amber-600 mt-2">
+                    Publica tu ruta ahora y te avisaremos apenas haya un match.
+                  </p>
+                  <button
+                    onClick={handlePublish}
+                    className="mt-4 bg-amber-500 text-white px-8 py-2.5 rounded-full text-sm font-bold hover:bg-amber-600 transition-colors"
+                  >
+                    Publicar mi ruta
+                  </button>
+                </>
               )}
             </div>
           )}
