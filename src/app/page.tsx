@@ -98,7 +98,7 @@ export default function Home() {
 
         <div className="max-w-4xl mx-auto px-6 relative text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-4">
-            Envía tu Carga por hasta un 60% Menos
+            Envía tu Carga por hasta un 24% Menos
           </h1>
           <p className="text-lg md:text-xl text-blue-100 mb-2 max-w-2xl mx-auto">
             Conectamos tu carga con camiones que ya van en tu dirección. Tarifas más bajas porque el camión ya hace el viaje.
@@ -286,7 +286,7 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Ahorra hasta un 60%</h3>
+              <h3 className="font-bold text-gray-900 mb-2">Ahorra en promedio un 24%</h3>
               <p className="text-sm text-gray-500">Paga una fracción del precio de mercado porque el camión ya hace el viaje.</p>
             </div>
 
@@ -407,7 +407,7 @@ export default function Home() {
       <section className="py-16 bg-blue-600 text-white">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
           <div>
-            <div className="text-4xl font-bold mb-1">60%</div>
+            <div className="text-4xl font-bold mb-1">24%</div>
             <div className="text-blue-200">Ahorro promedio</div>
           </div>
           <div>

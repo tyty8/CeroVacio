@@ -24,7 +24,7 @@ export default function EnviadorPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Ahorra hasta un 60%</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Ahorra en promedio un 24%</h3>
               <p className="text-gray-500">
                 Comparte el viaje con un transportista que ya va en esa dirección. Pagas solo una fracción del flete completo.
               </p>
@@ -128,7 +128,7 @@ export default function EnviadorPage() {
             <div className="text-blue-200">Costo por publicar</div>
           </div>
           <div>
-            <div className="text-4xl font-bold mb-1">~60%</div>
+            <div className="text-4xl font-bold mb-1">24%</div>
             <div className="text-blue-200">Ahorro vs flete tradicional</div>
           </div>
           <div>

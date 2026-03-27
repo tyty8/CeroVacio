@@ -44,7 +44,7 @@ const enviadorFAQs: FAQItem[] = [
   {
     question: "¿Cuánto puedo ahorrar en mi envío?",
     answer:
-      "En promedio, nuestros usuarios ahorran hasta un 60% comparado con un flete tradicional. El ahorro depende de la ruta y la disponibilidad de camiones.",
+      "En promedio, nuestros usuarios ahorran un 24% comparado con un flete tradicional. El ahorro depende de la ruta y la disponibilidad de camiones.",
   },
   {
     question: "¿Qué tipo de carga puedo enviar?",

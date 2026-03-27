@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LuxuTech - Envía tu carga por hasta un 60% menos",
+  title: "LuxuTech - Envía tu carga y ahorra en promedio un 24%",
   description:
-    "Conectamos tu carga con camiones que ya van en tu dirección. Ahorra hasta un 60% en envíos dentro de Chile.",
+    "Conectamos tu carga con camiones que ya van en tu dirección. Ahorro promedio de 24% en envíos dentro de Chile.",
 };
 
 export default function RootLayout({
