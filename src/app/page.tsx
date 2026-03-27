@@ -4,10 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import AddressInput from "@/components/AddressInput";
 import { trackEvent } from "@/lib/analytics";
 
-type UserType = "transportista" | "enviador";
-
 export default function Home() {
-  const [userType, setUserType] = useState<UserType>("enviador");
   const [originAddress, setOriginAddress] = useState("");
   const [originLat, setOriginLat] = useState<number | undefined>();
   const [originLng, setOriginLng] = useState<number | undefined>();
@@ -55,6 +52,7 @@ export default function Home() {
   }, [originLat, originLng, destLat, destLng]);
 
   const handlePublish = () => {
+    trackEvent("cta_click", { location: "search_card", user_type: "enviador" });
     const params = new URLSearchParams();
     if (originAddress) params.set("origin", originAddress);
     if (originLat) params.set("olat", String(originLat));
@@ -63,7 +61,7 @@ export default function Home() {
     if (destLat) params.set("dlat", String(destLat));
     if (destLng) params.set("dlng", String(destLng));
     if (pickupDate) params.set("date", pickupDate);
-    window.location.href = `/${userType}?${params.toString()}`;
+    window.location.href = `/enviador?${params.toString()}`;
   };
 
   return (
@@ -77,14 +75,21 @@ export default function Home() {
             </div>
             <span className="text-xl font-bold text-gray-900">LuxuTech</span>
           </div>
-          <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
-            <a href="#como-funciona" className="hover:text-blue-600 transition-colors">Cómo funciona</a>
-            <a href="#beneficios" className="hover:text-blue-600 transition-colors">Beneficios</a>
+          <div className="flex items-center gap-6 text-sm font-medium text-gray-600">
+            <a href="#como-funciona" className="hidden md:inline hover:text-blue-600 transition-colors">Cómo funciona</a>
+            <a href="#beneficios" className="hidden md:inline hover:text-blue-600 transition-colors">Beneficios</a>
+            <a
+              href="/transportista"
+              onClick={() => trackEvent("nav_click", { target: "transportista" })}
+              className="bg-gray-900 text-white px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-800 transition-colors"
+            >
+              Soy Transportista
+            </a>
           </div>
         </div>
       </nav>
 
-      {/* ─── Hero + Search Bar ─── */}
+      {/* ─── Hero ─── */}
       <section className="pt-28 pb-40 md:pb-44 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 text-white relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-72 h-72 bg-white rounded-full blur-3xl" />
@@ -93,44 +98,22 @@ export default function Home() {
 
         <div className="max-w-4xl mx-auto px-6 relative text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-4">
-            Gana Más con Cada Viaje
+            Envía tu Carga por hasta un 60% Menos
           </h1>
           <p className="text-lg md:text-xl text-blue-100 mb-2 max-w-2xl mx-auto">
-            Transportistas: gana hasta $500.000 CLP extra por viaje de retorno. Enviadores: ahorra hasta un 60% vs. precios de mercado.
+            Conectamos tu carga con camiones que ya van en tu dirección. Tarifas más bajas porque el camión ya hace el viaje.
           </p>
         </div>
       </section>
 
-      {/* ─── Floating Search Card (overlaps hero) ─── */}
+      {/* ─── Floating Search Card ─── */}
       <div className="max-w-5xl mx-auto px-6 -mt-28 md:-mt-32 relative z-10 mb-12">
         <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 md:p-8">
-          {/* User type toggle */}
-          <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => { setUserType("enviador"); trackEvent("user_type_select", { type: "enviador" }); }}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-colors ${
-                userType === "enviador"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              <span>📦</span> Necesito Enviar
-            </button>
-            <button
-              onClick={() => { setUserType("transportista"); trackEvent("user_type_select", { type: "transportista" }); }}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold transition-colors ${
-                userType === "transportista"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              <span>🚛</span> Soy Transportista
-            </button>
-          </div>
+          <h2 className="text-lg font-bold text-gray-900 mb-1">¿Qué necesitas enviar?</h2>
+          <p className="text-sm text-gray-500 mb-6">Ingresa tu ruta y te encontramos un camión disponible.</p>
 
           {/* Search fields */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-            {/* Origin */}
             <div className="md:col-span-4">
               <AddressInput
                 label="Origen"
@@ -143,7 +126,6 @@ export default function Home() {
               />
             </div>
 
-            {/* Destination */}
             <div className="md:col-span-4">
               <AddressInput
                 label="Destino"
@@ -156,7 +138,6 @@ export default function Home() {
               />
             </div>
 
-            {/* Date */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
               <input
@@ -168,14 +149,13 @@ export default function Home() {
               />
             </div>
 
-            {/* Action button */}
             <div className="md:col-span-2">
               <button
-                onClick={() => { trackEvent("cta_click", { location: "search_card", user_type: userType }); handlePublish(); }}
+                onClick={handlePublish}
                 disabled={!canSearch}
                 className="w-full py-2.5 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm"
               >
-                Publicar ruta
+                Buscar camión
               </button>
             </div>
           </div>
@@ -184,7 +164,7 @@ export default function Home() {
           <div className="mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-xs text-gray-400">
             <span>100% gratis, sin comisiones ocultas</span>
             <span className="hidden sm:inline">|</span>
-            <span>Tu datos solo se comparten con tu match</span>
+            <span>Tus datos solo se comparten con tu match</span>
             <span className="hidden sm:inline">|</span>
             <span>Publica en menos de 2 minutos</span>
           </div>
@@ -192,7 +172,7 @@ export default function Home() {
           {/* Match result (auto) */}
           {isChecking && (
             <div className="mt-6 text-center p-4 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-500">
-              Buscando rutas compatibles...
+              Buscando camiones disponibles...
             </div>
           )}
           {!isChecking && matchCount !== null && (
@@ -205,35 +185,35 @@ export default function Home() {
                     </span>
                     <p className="text-sm text-left text-green-700">
                       {matchCount === 1
-                        ? "ruta compatible encontrada dentro de 2 km de tu origen y destino."
-                        : "rutas compatibles encontradas dentro de 2 km de tu origen y destino."}
+                        ? "camión disponible cerca de tu ruta."
+                        : "camiones disponibles cerca de tu ruta."}
                     </p>
                   </div>
                   <button
                     onClick={handlePublish}
                     className="mt-4 bg-blue-600 text-white px-8 py-2.5 rounded-full text-sm font-bold hover:bg-blue-700 transition-colors"
                   >
-                    Publicar y conectar ahora
+                    Cotizar ahora
                   </button>
                 </>
               ) : (
                 <>
                   <p className="text-sm text-amber-800 font-medium">
-                    0 rutas disponibles hoy.
+                    No hay camiones disponibles hoy en esta ruta.
                   </p>
                   {tomorrowCount != null && tomorrowCount > 0 && (
                     <p className="text-sm text-amber-700 mt-1">
-                      Mañana hay <strong>{tomorrowCount} rutas</strong> disponibles en esta dirección.
+                      Mañana hay <strong>{tomorrowCount} camiones</strong> disponibles en esta dirección.
                     </p>
                   )}
                   <p className="text-xs text-amber-600 mt-2">
-                    Publica tu ruta ahora y te avisaremos apenas haya un match.
+                    Publica tu envío ahora y te avisaremos apenas haya un camión disponible.
                   </p>
                   <button
                     onClick={handlePublish}
                     className="mt-4 bg-amber-500 text-white px-8 py-2.5 rounded-full text-sm font-bold hover:bg-amber-600 transition-colors"
                   >
-                    Publicar mi ruta
+                    Publicar mi envío
                   </button>
                 </>
               )}
@@ -249,29 +229,29 @@ export default function Home() {
             Cómo funciona
           </h2>
           <p className="text-center text-gray-500 mb-16 max-w-2xl mx-auto">
-            En tres simples pasos monetiza tu viaje de retorno o consigue tarifas que no encontrarás en otro lado.
+            En tres simples pasos tu carga viaja por una fracción del precio.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl">📍</span>
+                <span className="text-3xl">📦</span>
               </div>
               <div className="text-sm font-bold text-blue-600 mb-2">PASO 1</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Publica tu ruta</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Publica tu envío</h3>
               <p className="text-gray-500">
-                Indica tu origen, destino y fecha. Si eres enviador, agrega los detalles de tu carga.
+                Indica origen, destino, fecha y los detalles de tu carga.
               </p>
             </div>
 
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
               <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <span className="text-3xl">🔗</span>
+                <span className="text-3xl">🚛</span>
               </div>
               <div className="text-sm font-bold text-blue-600 mb-2">PASO 2</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Te encontramos un match</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Te encontramos un camión</h3>
               <p className="text-gray-500">
-                Buscamos rutas compatibles dentro de 2 km de tu origen y destino.
+                Buscamos camiones que ya van en tu dirección y tienen espacio disponible.
               </p>
             </div>
 
@@ -280,9 +260,9 @@ export default function Home() {
                 <span className="text-3xl">🤝</span>
               </div>
               <div className="text-sm font-bold text-blue-600 mb-2">PASO 3</div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Se conectan</h3>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Coordinan y ahorras</h3>
               <p className="text-gray-500">
-                Te enviamos los datos de contacto para que coordinen directamente.
+                Te conectamos con el transportista para que acuerden precio y detalles directamente.
               </p>
             </div>
           </div>
@@ -292,9 +272,12 @@ export default function Home() {
       {/* ─── Beneficios ─── */}
       <section id="beneficios" className="py-20">
         <div className="max-w-7xl mx-auto px-6">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16">
-            Más ingresos, mejores tarifas
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">
+            ¿Por qué enviar con LuxuTech?
           </h2>
+          <p className="text-center text-gray-500 mb-16 max-w-2xl mx-auto">
+            Tarifas que no encontrarás en ningún otro lado, porque conectamos tu carga con camiones que ya hacen el viaje.
+          </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="text-center">
@@ -304,7 +287,7 @@ export default function Home() {
                 </svg>
               </div>
               <h3 className="font-bold text-gray-900 mb-2">Ahorra hasta un 60%</h3>
-              <p className="text-sm text-gray-500">Enviadores pagan una fracción del precio de mercado usando camiones que ya van en su dirección.</p>
+              <p className="text-sm text-gray-500">Paga una fracción del precio de mercado porque el camión ya hace el viaje.</p>
             </div>
 
             <div className="text-center">
@@ -313,8 +296,8 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Match rápido</h3>
-              <p className="text-sm text-gray-500">Nuestro algoritmo encuentra coincidencias en segundos.</p>
+              <h3 className="font-bold text-gray-900 mb-2">Match en segundos</h3>
+              <p className="text-sm text-gray-500">Nuestro algoritmo busca camiones compatibles con tu ruta al instante.</p>
             </div>
 
             <div className="text-center">
@@ -323,18 +306,18 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Verificado</h3>
-              <p className="text-sm text-gray-500">Todos los usuarios verifican su email antes de publicar.</p>
+              <h3 className="font-bold text-gray-900 mb-2">Transportistas verificados</h3>
+              <p className="text-sm text-gray-500">Todos los transportistas verifican su identidad antes de publicar.</p>
             </div>
 
             <div className="text-center">
               <div className="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Gana hasta $500.000 extra</h3>
-              <p className="text-sm text-gray-500">Transportistas: monetiza tu viaje de vuelta y gana entre $200.000 y $500.000 CLP por retorno.</p>
+              <h3 className="font-bold text-gray-900 mb-2">Te avisamos</h3>
+              <p className="text-sm text-gray-500">Si no hay match hoy, te notificamos apenas aparezca un camión en tu ruta.</p>
             </div>
           </div>
         </div>
@@ -344,35 +327,13 @@ export default function Home() {
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">
-            Lo que dicen nuestros usuarios
+            Lo que dicen nuestros clientes
           </h2>
           <p className="text-center text-gray-500 mb-12 max-w-2xl mx-auto">
-            Transportistas y enviadores que ya confían en LuxuTech.
+            Empresas y emprendedores que ya ahorran con LuxuTech.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                ))}
-              </div>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                &ldquo;Antes volvía vacío de Antofagasta a Santiago. Ahora gano entre $300.000 y $400.000 por cada retorno. Es plata que antes simplemente se perdía.&rdquo;
-              </p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 font-bold text-sm">CR</span>
-                </div>
-                <div>
-                  <div className="font-semibold text-gray-900 text-sm">Carlos R.</div>
-                  <div className="text-xs text-gray-500">Transportista, Ruta Santiago-Antofagasta</div>
-                </div>
-              </div>
-            </div>
-
             <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
@@ -390,7 +351,7 @@ export default function Home() {
                 </div>
                 <div>
                   <div className="font-semibold text-gray-900 text-sm">María V.</div>
-                  <div className="text-xs text-gray-500">Enviadora, Pyme en Santiago</div>
+                  <div className="text-xs text-gray-500">Pyme en Santiago</div>
                 </div>
               </div>
             </div>
@@ -404,15 +365,37 @@ export default function Home() {
                 ))}
               </div>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                &ldquo;Llevo 3 meses usando la plataforma y ya es parte de mi rutina. Publico mi ruta de vuelta apenas dejo la carga y casi siempre encuentro algo para el retorno.&rdquo;
+                &ldquo;Enviamos productos agrícolas cada semana desde Rancagua al sur. Antes pagábamos flete completo, ahora usamos LuxuTech y estamos ahorrando casi $400.000 al mes.&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <span className="text-blue-600 font-bold text-sm">JL</span>
+                  <span className="text-blue-600 font-bold text-sm">PG</span>
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900 text-sm">José L.</div>
-                  <div className="text-xs text-gray-500">Transportista, Ruta 5 Sur</div>
+                  <div className="font-semibold text-gray-900 text-sm">Pedro G.</div>
+                  <div className="text-xs text-gray-500">Exportadora agrícola, Rancagua</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <svg key={i} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                ))}
+              </div>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                &ldquo;Tengo una tienda online y enviar al norte siempre era carísimo. Ahora publico mi envío y en pocas horas ya tengo un transportista disponible a un precio justo.&rdquo;
+              </p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                  <span className="text-purple-600 font-bold text-sm">CA</span>
+                </div>
+                <div>
+                  <div className="font-semibold text-gray-900 text-sm">Catalina A.</div>
+                  <div className="text-xs text-gray-500">E-commerce, Viña del Mar</div>
                 </div>
               </div>
             </div>
@@ -424,12 +407,12 @@ export default function Home() {
       <section className="py-16 bg-blue-600 text-white">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
           <div>
-            <div className="text-4xl font-bold mb-1">500+</div>
-            <div className="text-blue-200">Rutas publicadas</div>
-          </div>
-          <div>
             <div className="text-4xl font-bold mb-1">60%</div>
             <div className="text-blue-200">Ahorro promedio</div>
+          </div>
+          <div>
+            <div className="text-4xl font-bold mb-1">500+</div>
+            <div className="text-blue-200">Envíos realizados</div>
           </div>
           <div>
             <div className="text-4xl font-bold mb-1">$0</div>
@@ -446,23 +429,16 @@ export default function Home() {
       <section className="py-20 text-center">
         <div className="max-w-3xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            ¿Listo para ganar más o pagar menos?
+            ¿Listo para ahorrar en tu próximo envío?
           </h2>
           <p className="text-gray-500 text-lg mb-8">
-            Publica tu ruta gratis y empieza a ahorrar o generar ingresos hoy mismo.
+            Publica tu envío gratis y recibe cotizaciones de camiones que ya van en tu dirección.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="/enviador"
-              onClick={() => trackEvent("cta_click", { location: "bottom_banner", user_type: "enviador" })}
-              className="inline-flex items-center justify-center bg-blue-600 text-white px-10 py-4 rounded-full text-lg font-bold hover:bg-blue-700 transition-colors shadow-lg">
-              Necesito Enviar
-            </a>
-            <a href="/transportista"
-              onClick={() => trackEvent("cta_click", { location: "bottom_banner", user_type: "transportista" })}
-              className="inline-flex items-center justify-center border-2 border-blue-600 text-blue-600 px-10 py-4 rounded-full text-lg font-bold hover:bg-blue-50 transition-colors">
-              Soy Transportista
-            </a>
-          </div>
+          <a href="/enviador"
+            onClick={() => trackEvent("cta_click", { location: "bottom_banner", user_type: "enviador" })}
+            className="inline-flex items-center justify-center bg-blue-600 text-white px-10 py-4 rounded-full text-lg font-bold hover:bg-blue-700 transition-colors shadow-lg">
+            Publicar mi envío gratis
+          </a>
           <p className="mt-6 text-sm text-gray-400">
             100% gratis. Sin comisiones ocultas. Tu información solo se comparte con tu match confirmado.
           </p>
@@ -471,7 +447,7 @@ export default function Home() {
 
       {/* ─── Floating WhatsApp Button ─── */}
       <a
-        href="https://wa.me/56996119028?text=Hola%2C%20quiero%20saber%20más%20sobre%20LuxuTech"
+        href="https://wa.me/56996119028?text=Hola%2C%20necesito%20enviar%20una%20carga"
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => trackEvent("whatsapp_click", { location: "floating_button" })}
@@ -495,7 +471,7 @@ export default function Home() {
                 <span className="text-lg font-bold text-white">LuxuTech</span>
               </div>
               <p className="text-sm leading-relaxed">
-                Más ingresos para transportistas, mejores tarifas para enviadores. Conectamos oferta y demanda en las rutas de Chile.
+                Envía tu carga por menos aprovechando camiones que ya van en tu dirección. La forma más inteligente de mover carga en Chile.
               </p>
             </div>
             <div>
@@ -503,6 +479,7 @@ export default function Home() {
               <ul className="space-y-2 text-sm">
                 <li><a href="#como-funciona" className="hover:text-white transition-colors">Cómo funciona</a></li>
                 <li><a href="#beneficios" className="hover:text-white transition-colors">Beneficios</a></li>
+                <li><a href="/transportista" className="hover:text-white transition-colors">Para Transportistas</a></li>
               </ul>
             </div>
             <div>

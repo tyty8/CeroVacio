@@ -15,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LuxuTech - Gana más con cada viaje de retorno",
+  title: "LuxuTech - Envía tu carga por hasta un 60% menos",
   description:
-    "Transportistas: genera ingresos extra con tu viaje de vuelta. Enviadores: consigue las mejores tarifas del mercado.",
+    "Conectamos tu carga con camiones que ya van en tu dirección. Ahorra hasta un 60% en envíos dentro de Chile.",
 };
 
 export default function RootLayout({
