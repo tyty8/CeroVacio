@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import { GA_MEASUREMENT_ID } from "@/lib/analytics";
 import "./globals.css";
 
@@ -29,24 +30,25 @@ export default function RootLayout({
       lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
+      <body className="min-h-full flex flex-col">
+        {children}
         {GA_MEASUREMENT_ID && (
           <>
-            <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
-            <script
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: true });
-                `,
-              }}
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+              strategy="afterInteractive"
             />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: true });
+              `}
+            </Script>
           </>
         )}
-      </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      </body>
     </html>
   );
 }
