@@ -92,10 +92,10 @@ export default function Home() {
 
         <div className="max-w-4xl mx-auto px-6 relative text-center">
           <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-4">
-            Cero Viajes Vacíos
+            Gana Más con Cada Viaje
           </h1>
           <p className="text-lg md:text-xl text-blue-100 mb-2 max-w-2xl mx-auto">
-            Conectamos transportistas con enviadores en la misma ruta. Publica gratis, encuentra un match al instante.
+            Transportistas: llena tu camión de vuelta y gana más. Enviadores: consigue las mejores tarifas aprovechando camiones que ya van en tu dirección.
           </p>
         </div>
       </section>
@@ -239,7 +239,7 @@ export default function Home() {
             Cómo funciona
           </h2>
           <p className="text-center text-gray-500 mb-16 max-w-2xl mx-auto">
-            En tres simples pasos conectamos tu carga con un camión que ya va en esa dirección.
+            En tres simples pasos monetiza tu viaje de retorno o consigue tarifas que no encontrarás en otro lado.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -283,7 +283,7 @@ export default function Home() {
       <section id="beneficios" className="py-20">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16">
-            Tu aliado de transporte 24/7
+            Más ingresos, mejores tarifas
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -293,8 +293,8 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Precios accesibles</h3>
-              <p className="text-sm text-gray-500">Aprovecha camiones que ya van en tu dirección a una fracción del costo.</p>
+              <h3 className="font-bold text-gray-900 mb-2">Tarifas imbatibles</h3>
+              <p className="text-sm text-gray-500">Envía a una fracción del precio de mercado usando camiones que ya van en tu dirección.</p>
             </div>
 
             <div className="text-center">
@@ -323,8 +323,8 @@ export default function Home() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h3 className="font-bold text-gray-900 mb-2">Sustentable</h3>
-              <p className="text-sm text-gray-500">Menos viajes vacíos = menos emisiones de CO2.</p>
+              <h3 className="font-bold text-gray-900 mb-2">Rentabiliza tu retorno</h3>
+              <p className="text-sm text-gray-500">Transportistas: convierte cada viaje de vuelta en una oportunidad de ingreso extra.</p>
             </div>
           </div>
         </div>
@@ -352,10 +352,10 @@ export default function Home() {
       <section className="py-20 text-center">
         <div className="max-w-3xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            ¿Listo para eliminar los viajes vacíos?
+            ¿Listo para ganar más o pagar menos?
           </h2>
           <p className="text-gray-500 text-lg mb-8">
-            Publica tu ruta gratis y encuentra un match hoy mismo.
+            Publica tu ruta gratis y empieza a ahorrar o generar ingresos hoy mismo.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <a href="/enviador"
@@ -382,7 +382,7 @@ export default function Home() {
                 <span className="text-lg font-bold text-white">LuxuTech</span>
               </div>
               <p className="text-sm leading-relaxed">
-                Conectamos transportistas con enviadores para eliminar los viajes vacíos en Chile.
+                Más ingresos para transportistas, mejores tarifas para enviadores. Conectamos oferta y demanda en las rutas de Chile.
               </p>
             </div>
             <div>

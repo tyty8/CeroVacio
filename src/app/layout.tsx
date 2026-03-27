@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LuxuTech - Conecta tus rutas de retorno",
+  title: "LuxuTech - Gana más con cada viaje de retorno",
   description:
-    "Elimina los viajes vacíos conectando transportistas con enviadores en rutas compatibles.",
+    "Transportistas: genera ingresos extra con tu viaje de vuelta. Enviadores: consigue las mejores tarifas del mercado.",
 };
 
 export default function RootLayout({
