@@ -4,6 +4,67 @@ import { useState, useEffect, useRef } from "react";
 import AddressInput from "@/components/AddressInput";
 import { trackEvent } from "@/lib/analytics";
 
+function useInView() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect(); } },
+      { threshold: 0.15 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return { ref, visible };
+}
+
+function AnimatedStat({ value, label }: { value: string; label: string }) {
+  const { ref, visible } = useInView();
+  const isNumeric = /^\d+/.test(value);
+  const numericPart = parseInt(value.replace(/\D/g, ""), 10);
+  const suffix = value.replace(/^\d+/, "");
+  const [display, setDisplay] = useState(isNumeric ? "0" : value);
+
+  useEffect(() => {
+    if (!visible || !isNumeric) return;
+    const duration = 1200;
+    const steps = 30;
+    const increment = numericPart / steps;
+    let current = 0;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      current = Math.min(Math.round(increment * step), numericPart);
+      setDisplay(String(current));
+      if (step >= steps) clearInterval(timer);
+    }, duration / steps);
+    return () => clearInterval(timer);
+  }, [visible, isNumeric, numericPart]);
+
+  return (
+    <div ref={ref}>
+      <div className="text-4xl font-bold mb-1">
+        {isNumeric ? `${display}${suffix}` : value}
+      </div>
+      <div className="text-blue-200">{label}</div>
+    </div>
+  );
+}
+
+function FadeIn({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  const { ref, visible } = useInView();
+  return (
+    <div
+      ref={ref}
+      className={`transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"} ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function Home() {
   const [originAddress, setOriginAddress] = useState("");
   const [originLat, setOriginLat] = useState<number | undefined>();
@@ -100,17 +161,31 @@ export default function Home() {
           <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-4">
             Envía tu Carga por hasta un 24% Menos
           </h1>
-          <p className="text-lg md:text-xl text-blue-100 mb-2 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-blue-100 mb-4 max-w-2xl mx-auto">
             Conectamos tu carga con camiones que ya van en tu dirección. Tarifas más bajas porque el camión ya hace el viaje.
           </p>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-blue-200">
+            <span className="flex items-center gap-1.5">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+              Match en menos de 24 hrs
+            </span>
+            <span className="flex items-center gap-1.5">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              Publica en 2 min
+            </span>
+            <span className="flex items-center gap-1.5">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+              Coordina directo, sin intermediarios
+            </span>
+          </div>
         </div>
       </section>
 
       {/* ─── Floating Search Card ─── */}
       <div className="max-w-5xl mx-auto px-6 -mt-28 md:-mt-32 relative z-10 mb-12">
         <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 md:p-8">
-          <h2 className="text-lg font-bold text-gray-900 mb-1">¿Qué necesitas enviar?</h2>
-          <p className="text-sm text-gray-500 mb-6">Ingresa tu ruta y te encontramos un camión disponible.</p>
+          <h2 className="text-lg font-bold text-gray-900 mb-1">Prueba gratis con tu primer envío</h2>
+          <p className="text-sm text-gray-500 mb-6">Sin compromiso, sin tarjeta, sin comisiones. Ingresa tu ruta y ve camiones disponibles al instante.</p>
 
           {/* Search fields */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
@@ -224,6 +299,7 @@ export default function Home() {
 
       {/* ─── Cómo Funciona ─── */}
       <section id="como-funciona" className="py-20 bg-gray-50">
+        <FadeIn>
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">
             Cómo funciona
@@ -267,10 +343,42 @@ export default function Home() {
             </div>
           </div>
         </div>
+        </FadeIn>
       </section>
+
+      {/* ─── Qué puedes enviar ─── */}
+      <FadeIn>
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <h2 className="text-2xl md:text-3xl font-bold text-center text-gray-900 mb-3">
+            ¿Qué puedes enviar?
+          </h2>
+          <p className="text-center text-gray-500 mb-10 max-w-xl mx-auto">
+            Si cabe en un camión, lo puedes enviar por LuxuTech.
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            {[
+              { icon: "📦", label: "Carga general" },
+              { icon: "🖨️", label: "Impresos y packaging" },
+              { icon: "🌾", label: "Productos agrícolas" },
+              { icon: "⚙️", label: "Maquinaria industrial" },
+              { icon: "🧱", label: "Materiales de construcción" },
+              { icon: "🛒", label: "Productos retail" },
+            ].map((item) => (
+              <div key={item.label} className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-colors">
+                <span className="text-2xl mb-2 block">{item.icon}</span>
+                <span className="text-sm font-medium text-gray-700">{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+      </FadeIn>
 
       {/* ─── Beneficios ─── */}
       <section id="beneficios" className="py-20">
+        <FadeIn>
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-4">
             ¿Por qué enviar con LuxuTech?
@@ -321,6 +429,7 @@ export default function Home() {
             </div>
           </div>
         </div>
+        </FadeIn>
       </section>
 
       {/* ─── Testimonials ─── */}
@@ -406,44 +515,41 @@ export default function Home() {
       {/* ─── Stats ─── */}
       <section className="py-16 bg-blue-600 text-white">
         <div className="max-w-5xl mx-auto px-6 grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
-          <div>
-            <div className="text-4xl font-bold mb-1">24%</div>
-            <div className="text-blue-200">Ahorro promedio</div>
-          </div>
-          <div>
-            <div className="text-4xl font-bold mb-1">500+</div>
-            <div className="text-blue-200">Envíos realizados</div>
-          </div>
-          <div>
-            <div className="text-4xl font-bold mb-1">$0</div>
-            <div className="text-blue-200">Costo por publicar</div>
-          </div>
-          <div>
-            <div className="text-4xl font-bold mb-1">24/7</div>
-            <div className="text-blue-200">Disponible siempre</div>
-          </div>
+          <AnimatedStat value="24%" label="Ahorro promedio" />
+          <AnimatedStat value="500+" label="Envíos realizados" />
+          <AnimatedStat value="$0" label="Costo por publicar" />
+          <AnimatedStat value="24/7" label="Disponible siempre" />
         </div>
       </section>
 
       {/* ─── CTA Banner ─── */}
+      <FadeIn>
       <section className="py-20 text-center">
         <div className="max-w-3xl mx-auto px-6">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            ¿Listo para ahorrar en tu próximo envío?
+            Prueba gratis, sin compromiso
           </h2>
           <p className="text-gray-500 text-lg mb-8">
-            Publica tu envío gratis y recibe cotizaciones de camiones que ya van en tu dirección.
+            Publica tu primer envío y ve cómo funciona. Sin tarjeta, sin comisiones, sin letra chica.
           </p>
-          <a href="/enviador"
-            onClick={() => trackEvent("cta_click", { location: "bottom_banner", user_type: "enviador" })}
-            className="inline-flex items-center justify-center bg-blue-600 text-white px-10 py-4 rounded-full text-lg font-bold hover:bg-blue-700 transition-colors shadow-lg">
-            Publicar mi envío gratis
-          </a>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="/enviador"
+              onClick={() => trackEvent("cta_click", { location: "bottom_banner", user_type: "enviador" })}
+              className="inline-flex items-center justify-center bg-blue-600 text-white px-10 py-4 rounded-full text-lg font-bold hover:bg-blue-700 transition-colors shadow-lg">
+              Publicar mi primer envío
+            </a>
+            <a href="/enviador"
+              onClick={() => trackEvent("cta_click", { location: "bottom_banner_secondary", user_type: "enviador" })}
+              className="inline-flex items-center justify-center border-2 border-gray-300 text-gray-600 px-10 py-4 rounded-full text-lg font-semibold hover:border-blue-400 hover:text-blue-600 transition-colors">
+              Ver rutas disponibles
+            </a>
+          </div>
           <p className="mt-6 text-sm text-gray-400">
             100% gratis. Sin comisiones ocultas. Tu información solo se comparte con tu match confirmado.
           </p>
         </div>
       </section>
+      </FadeIn>
 
       {/* ─── Floating WhatsApp Button ─── */}
       <a

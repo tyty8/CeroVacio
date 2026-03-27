@@ -231,6 +231,9 @@ export default function TransportistaPage() {
           <p className="mt-4 text-sm text-gray-400">
             Sin comisiones ocultas. Tus datos solo se comparten con enviadores que hacen match con tu ruta.
           </p>
+          <a href="/faq" className="mt-4 inline-block text-sm text-blue-600 hover:underline font-medium">
+            ¿Tienes dudas? Lee nuestras preguntas frecuentes &rarr;
+          </a>
         </div>
       </section>
     </RouteForm>
