@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import AddressInput from "@/components/AddressInput";
 import MapPreviewDynamic from "@/components/MapPreviewDynamic";
 
-type Step = "route" | "email" | "verify" | "contact" | "done";
+type Step = "route" | "date" | "email" | "verify" | "contact" | "done";
 
 interface RouteFormProps {
   userType: "transportista" | "enviador";
@@ -36,9 +36,13 @@ export default function RouteForm({ userType, title, routeQuestion, children }: 
     if (params.get("dlng")) setDestinationLng(Number(params.get("dlng")));
     if (params.get("date")) setPickupDate(params.get("date")!);
 
-    // Skip to email step if route data is complete from homepage
-    if (params.get("olat") && params.get("dlat") && params.get("date")) {
-      setStep("email");
+    // Skip ahead if route data came from homepage
+    if (params.get("olat") && params.get("dlat")) {
+      if (params.get("date")) {
+        setStep("email");
+      } else {
+        setStep("date");
+      }
     }
   }, []);
 
@@ -253,6 +257,43 @@ export default function RouteForm({ userType, title, routeQuestion, children }: 
 
                 <button onClick={handleRouteSubmit} disabled={!originLat || !destinationLat || !pickupDate}
                   className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-lg">
+                  Continuar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step: Date only (when coming from homepage without date) */}
+          {step === "date" && (
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-gray-900">
+                  {userType === "transportista" ? "¿Cuándo es tu viaje?" : "¿Cuándo necesitas enviar?"}
+                </h3>
+                <button onClick={() => setStep("route")} className="text-sm text-blue-600 hover:underline font-medium">Volver</button>
+              </div>
+              <div className="space-y-5">
+                <div className="p-4 bg-gray-50 rounded-xl text-sm text-gray-600 space-y-1">
+                  <p><strong>Origen:</strong> {originAddress}</p>
+                  <p><strong>Destino:</strong> {destinationAddress}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    {userType === "transportista" ? "Fecha del viaje" : "Fecha de envío"}
+                  </label>
+                  <input
+                    type="date"
+                    value={pickupDate}
+                    onChange={(e) => setPickupDate(e.target.value)}
+                    min={today}
+                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <button
+                  onClick={() => { if (pickupDate) setStep("email"); }}
+                  disabled={!pickupDate}
+                  className="w-full py-3.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-lg"
+                >
                   Continuar
                 </button>
               </div>
