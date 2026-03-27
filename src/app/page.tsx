@@ -471,7 +471,7 @@ export default function Home() {
 
       {/* ─── Floating WhatsApp Button ─── */}
       <a
-        href="https://wa.me/56XXXXXXXXX?text=Hola%2C%20quiero%20saber%20más%20sobre%20LuxuTech"
+        href="https://wa.me/56996119028?text=Hola%2C%20quiero%20saber%20más%20sobre%20LuxuTech"
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => trackEvent("whatsapp_click", { location: "floating_button" })}
