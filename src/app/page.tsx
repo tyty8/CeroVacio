@@ -387,15 +387,15 @@ export default function Home() {
                 ))}
               </div>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                &ldquo;Tengo una tienda online y enviar al norte siempre era carísimo. Ahora publico mi envío y en pocas horas ya tengo un transportista disponible a un precio justo.&rdquo;
+                &ldquo;Enviamos pallets de impresos a clientes en todo Chile. Antes el flete nos comía el margen. Con LuxuTech encontramos camiones que ya van a destino y bajamos los costos de envío casi a la mitad.&rdquo;
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                  <span className="text-purple-600 font-bold text-sm">CA</span>
+                  <span className="text-purple-600 font-bold text-sm">RA</span>
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900 text-sm">Catalina A.</div>
-                  <div className="text-xs text-gray-500">E-commerce, Viña del Mar</div>
+                  <div className="font-semibold text-gray-900 text-sm">Roberto A.</div>
+                  <div className="text-xs text-gray-500">Imprenta, Santiago</div>
                 </div>
               </div>
             </div>
@@ -485,6 +485,7 @@ export default function Home() {
             <div>
               <h4 className="font-semibold text-white mb-4">Legal</h4>
               <ul className="space-y-2 text-sm">
+                <li><a href="/faq" className="hover:text-white transition-colors">Preguntas Frecuentes</a></li>
                 <li><a href="/privacidad" className="hover:text-white transition-colors">Política de Privacidad</a></li>
                 <li><a href="/terminos" className="hover:text-white transition-colors">Términos y Condiciones</a></li>
               </ul>
