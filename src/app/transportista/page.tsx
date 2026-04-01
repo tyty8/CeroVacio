@@ -4,8 +4,8 @@ export default function TransportistaPage() {
   return (
     <RouteForm
       userType="transportista"
-      title="Publica tu Ruta de Retorno"
-      routeQuestion="¿Hacia dónde vuelves?"
+      title="Deja de Volver Vacío"
+      routeQuestion="¿Hacia dónde vuelves? Publica tu ruta y gana plata"
     >
       {/* ─── Pain Point Hero ─── */}
       <section className="py-20 bg-gradient-to-b from-gray-900 to-gray-800 text-white">

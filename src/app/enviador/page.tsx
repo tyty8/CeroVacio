@@ -4,7 +4,7 @@ export default function EnviadorPage() {
   return (
     <RouteForm
       userType="enviador"
-      title="Necesito Enviar"
+      title="Envía por Menos con LuxuTech"
       routeQuestion="¿De dónde a dónde necesitas enviar?"
     >
       {/* Benefits */}
