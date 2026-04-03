@@ -215,7 +215,7 @@ export default function Home() {
   const [isChecking, setIsChecking] = useState(false);
 
   /* #15 Price Calculator state */
-  const [calcDistance, setCalcDistance] = useState(300);
+  const [calcDistance, setCalcDistance] = useState(50);
   const [calcWeight, setCalcWeight] = useState(1000);
 
   /* #16 One-Click Re-Publish */
@@ -289,9 +289,15 @@ export default function Home() {
     window.location.href = `/enviador?${params.toString()}`;
   };
 
-  /* #15 Price calculator derived values */
-  const traditionalPrice = Math.round(calcDistance * 1.8 * (calcWeight / 500));
-  const luxutechPrice = Math.round(traditionalPrice * 0.76);
+  /* #15 Price calculator derived values — dynamic discount based on distance & weight */
+  // Base: ~$1,200 CLP/km for light loads, scaling with weight (up to ~$2,500/km for heavy)
+  const ratePerKm = 1200 + 1300 * Math.min(calcWeight / 20000, 1);
+  const traditionalPrice = Math.round(calcDistance * ratePerKm);
+  // Longer distances & heavier loads = more backhaul availability = bigger discount
+  const distanceFactor = Math.min((calcDistance - 50) / (100 - 50), 1); // 0 at 50km, 1 at 100km
+  const weightFactor = Math.min((calcWeight - 100) / (20000 - 100), 1); // 0 at 100kg, 1 at 20000kg
+  const discountPercent = 20 + 15 * (distanceFactor * 0.7 + weightFactor * 0.3); // 20% to 35%
+  const luxutechPrice = Math.round(traditionalPrice * (1 - discountPercent / 100));
   const savings = traditionalPrice - luxutechPrice;
   const savingsPercent = Math.round((savings / traditionalPrice) * 100);
 
@@ -629,15 +635,15 @@ export default function Home() {
                 <input
                   type="range"
                   min={50}
-                  max={2000}
-                  step={10}
+                  max={100}
+                  step={5}
                   value={calcDistance}
                   onChange={(e) => setCalcDistance(Number(e.target.value))}
                   className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                 />
                 <div className="flex justify-between text-xs text-gray-400 mt-1">
                   <span>50 km</span>
-                  <span>2000 km</span>
+                  <span>100 km</span>
                 </div>
               </div>
               <div>
